@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>背单词</title>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#254C43">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="背单词">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
+
+<style>
+  :root{
+    --ink:#232722;
+    --ink-soft:#5b6259;
+    --paper:#F9F8F4;
+    --paper-raised:#FFFFFF;
+    --line:#E3E0D6;
+    --teal:#3C6E62;
+    --teal-deep:#254C43;
+    --coral:#B85C4A;
+    --sand:#EFEBDE;
+    --shadow: 0 1px 2px rgba(35,39,34,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+  body{ font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, sans-serif; }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  header{
+    padding:calc(20px + env(safe-area-inset-top,0)) 20px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  header h1{
+    font-family: Georgia, "Noto Serif SC", serif;
+    font-weight:600;
+    font-size:22px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  header .count{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  main{
+    flex:1;
+    padding:20px;
+    padding-bottom:96px;
+    overflow-y:auto;
+  }
+  nav.tabbar{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    max-width:480px;
+    margin:0 auto;
+    background:var(--paper-raised);
+    border-top:1px solid var(--line);
+    display:flex;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  nav.tabbar button{
+    flex:1;
+    background:none;
+    border:none;
+    padding:12px 4px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    font-family:inherit;
+    font-size:12px;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  nav.tabbar button .dot{
+    width:5px;height:5px;border-radius:50%;
+    background:transparent;
+  }
+  nav.tabbar button.active{color:var(--teal-deep);font-weight:600;}
+  nav.tabbar button.active .dot{background:var(--teal);}
+
+  .review-empty{
+    text-align:center;
+    padding:60px 10px;
+    color:var(--ink-soft);
+  }
+  .review-empty .big{
+    font-family: Georgia, "Noto Serif SC", serif;
+    font-size:19px;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .review-progress{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .card{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:6px;
+    box-shadow:var(--shadow);
+    min-height:340px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:32px 24px;
+    text-align:center;
+    cursor:pointer;
+  }
+  .card .word{
+    font-family: Georgia, "Noto Serif SC", serif;
+    font-weight:600;
+    font-size:34px;
+    letter-spacing:-0.01em;
+  }
+  .card .hint{
+    margin-top:18px;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .card.flipped{
+    align-items:stretch;
+    text-align:left;
+    cursor:default;
+    padding:24px;
+  }
+  .card .back-word{
+    font-family: Georgia, "Noto Serif SC", serif;
+    font-weight:600;
+    font-size:26px;
+    margin-bottom:6px;
+  }
+  .card .meaning{
+    color:var(--teal-deep);
+    font-size:15px;
+    margin-bottom:14px;
+  }
+  .card .sentences{
+    border-top:1px solid var(--line);
+    padding-top:12px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .card .sentence{
+    font-size:14.5px;
+    line-height:1.55;
+    color:var(--ink);
+  }
+  .review-actions{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+  }
+  .review-actions button{
+    flex:1;
+    border:none;
+    border-radius:6px;
+    padding:14px 10px;
+    font-family:inherit;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-forgot{background:var(--sand);color:var(--coral);}
+  .btn-known{background:var(--teal);color:#fff;}
+  .review-tip{
+    text-align:center;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:10px;
+  }
+
+  .field{margin-bottom:18px;}
+  .field label{
+    display:block;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input, .field textarea{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:var(--paper-raised);
+    padding:12px 13px;
+    font-family:inherit;
+    font-size:16px;
+    color:var(--ink);
+  }
+  .field textarea{
+    min-height:110px;
+    resize:vertical;
+    line-height:1.5;
+  }
+  .field .sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
+  .submit-btn{
+    width:100%;
+    background:var(--teal-deep);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    padding:15px;
+    font-family:inherit;
+    font-size:15.5px;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .submit-btn:disabled{background:var(--line);color:var(--ink-soft);}
+  .toast{
+    position:fixed;
+    bottom:88px;left:50%;
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:20px;
+    font-size:13px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s;
+    z-index:20;
+  }
+  .toast.show{opacity:1;}
+
+  .search{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:11px 13px;
+    font-size:15px;
+    font-family:inherit;
+    margin-bottom:16px;
+    background:var(--paper-raised);
+  }
+  .word-item{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:14px 15px;
+    margin-bottom:10px;
+  }
+  .word-item .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  .word-item .w{
+    font-family: Georgia, "Noto Serif SC", serif;
+    font-weight:600;
+    font-size:18px;
+  }
+  .word-item .box{
+    font-size:11px;
+    color:var(--teal-deep);
+    background:var(--sand);
+    padding:2px 8px;
+    border-radius:10px;
+  }
+  .word-item .m{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+  .word-item .s-count{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+  .word-item .actions{
+    display:flex;
+    gap:14px;
+    margin-top:10px;
+  }
+  .word-item .actions button{
+    border:none;background:none;
+    font-family:inherit;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    padding:0;
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  .empty-state{
+    text-align:center;
+    color:var(--ink-soft);
+    padding:60px 20px;
+    font-size:14px;
+    line-height:1.6;
+  }
+  .banner{
+    background:var(--sand);
+    color:var(--teal-deep);
+    font-size:12.5px;
+    padding:8px 20px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>背单词</h1>
+    <span class="count" id="headerCount"></span>
+  </header>
+  <div class="banner" id="offlineBanner" style="display:none;">当前离线，复习和添加照常可用</div>
+  <main id="main"></main>
+  <nav class="tabbar">
+    <button data-tab="review"><span class="dot"></span>复习</button>
+    <button data-tab="list"><span class="dot"></span>词库</button>
+    <button data-tab="add"><span class="dot"></span>添加</button>
+  </nav>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/*
+ * 命名空间约定：
+ * 所有状态、逻辑、渲染函数都挂在 Vocab 这一个全局对象下面，
+ * 不要在这个 <script> 里再声明裸的顶层 var/let/const/function。
+ *
+ * 以后加新功能，对应放进下面某个分组：
+ *   Vocab.config   —— 常量、配置
+ *   Vocab.state    —— 运行时状态（内存里的数据）
+ *   Vocab.storage  —— 读写 localStorage
+ *   Vocab.review   —— 复习/间隔重复算法
+ *   Vocab.render   —— 各个 tab 页面的渲染函数
+ *   Vocab.utils    —— 通用小工具函数
+ * 新增一个独立功能模块（比如以后加"统计"）就新开一个 Vocab.stats = {...}，
+ * 不要把内容塞进已有分组里显得臃肿。
+ *
+ * 调试时浏览器控制台里可以直接用 Vocab.state.words 之类的路径查看/修改数据。
+ */
+const Vocab = {
+
+  config: {
+    DAY: 24 * 60 * 60 * 1000,
+    // Leitner 盒子对应的复习间隔（天），下标即盒子编号
+    INTERVALS: [0, 1, 2, 4, 7, 15],
+    STORAGE_KEY: 'vocab-words-v1',
+    get MAX_BOX(){ return this.INTERVALS.length - 1; }
+  },
+
+  state: {
+    words: [],
+    currentTab: 'review',
+    reviewQueue: [],
+    reviewIndex: 0,
+    cardFlipped: false,
+    editingId: null
+  },
+
+  dom: {
+    main: null,
+    headerCount: null,
+    toast: null,
+    offlineBanner: null
+  },
+
+  storage: {
+    load(){
+      try{
+        const raw = localStorage.getItem(Vocab.config.STORAGE_KEY);
+        Vocab.state.words = raw ? JSON.parse(raw) : [];
+      }catch(e){
+        Vocab.state.words = [];
+        Vocab.utils.toast('本地数据读取失败');
+      }
+    },
+    save(){
+      try{
+        localStorage.setItem(Vocab.config.STORAGE_KEY, JSON.stringify(Vocab.state.words));
+      }catch(e){
+        Vocab.utils.toast('保存失败，存储空间可能已满');
+      }
+    }
+  },
+
+  review: {
+    isDue(w){
+      return w.nextReview <= Date.now();
+    },
+    buildQueue(includeAll){
+      const pool = includeAll ? Vocab.state.words.slice() : Vocab.state.words.filter(Vocab.review.isDue);
+      pool.sort((a,b)=>a.nextReview - b.nextReview);
+      return pool;
+    },
+    grade(known){
+      const S = Vocab.state;
+      const w = S.reviewQueue[S.reviewIndex];
+      const target = S.words.find(x=>x.id === w.id);
+      if(target){
+        const cfg = Vocab.config;
+        target.box = known ? Math.min(target.box + 1, cfg.MAX_BOX) : 0;
+        target.nextReview = Date.now() + cfg.INTERVALS[target.box] * cfg.DAY;
+        target.reviewCount = (target.reviewCount||0) + 1;
+        target.lastReviewed = Date.now();
+      }
+      Vocab.storage.save();
+      S.reviewIndex++;
+      S.cardFlipped = false;
+      Vocab.render.main();
+    }
+  },
+
+  utils: {
+    uid(){
+      return 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    },
+    escapeHtml(str){
+      return String(str || '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    },
+    formatDate(ts){
+      const d = new Date(ts);
+      const today = new Date();
+      if(d.toDateString() === today.toDateString()) return '今天';
+      return `${d.getMonth()+1}/${d.getDate()}`;
+    },
+    toast(msg){
+      const el = Vocab.dom.toast;
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(()=>el.classList.remove('show'), 1600);
+    }
+  },
+
+  render: {
+    main(){
+      const S = Vocab.state;
+      Vocab.dom.headerCount.textContent = S.words.length ? `共 ${S.words.length} 个单词` : '';
+      if(S.currentTab === 'review') Vocab.render.review();
+      else if(S.currentTab === 'list') Vocab.render.list();
+      else Vocab.render.add();
+      document.querySelectorAll('nav.tabbar button').forEach(b=>{
+        b.classList.toggle('active', b.dataset.tab === S.currentTab);
+      });
+    },
+
+    review(){
+      const S = Vocab.state;
+      const $main = Vocab.dom.main;
+
+      if(S.reviewQueue.length === 0){
+        if(S.words.length === 0){
+          $main.innerHTML = `<div class="review-empty">
+            <div class="big">词库还是空的</div>
+            <div>去「添加」里录入第一个单词吧</div>
+          </div>`;
+          return;
+        }
+        $main.innerHTML = `<div class="review-empty">
+          <div class="big">今天要复习的都完成啦</div>
+          <div>可以提前复习其他单词，或者明天再来</div>
+        </div>
+        <button class="submit-btn" id="reviewAheadBtn" style="margin-top:8px;">提前复习全部单词</button>`;
+        document.getElementById('reviewAheadBtn').onclick = ()=>{
+          S.reviewQueue = Vocab.review.buildQueue(true);
+          S.reviewIndex = 0;
+          S.cardFlipped = false;
+          Vocab.render.main();
+        };
+        return;
+      }
+
+      if(S.reviewIndex >= S.reviewQueue.length){
+        S.reviewQueue = [];
+        Vocab.render.main();
+        return;
+      }
+
+      const w = S.reviewQueue[S.reviewIndex];
+      const esc = Vocab.utils.escapeHtml;
+      let html = `<div class="review-progress">复习中 ${S.reviewIndex+1} / ${S.reviewQueue.length}</div>`;
+
+      if(!S.cardFlipped){
+        html += `<div class="card" id="flipCard">
+          <div class="word">${esc(w.word)}</div>
+          <div class="hint">轻触卡片查看释义</div>
+        </div>`;
+      } else {
+        const sentencesHtml = (w.sentences||[]).map(s=>`<div class="sentence">${esc(s)}</div>`).join('');
+        html += `<div class="card flipped">
+          <div class="back-word">${esc(w.word)}</div>
+          ${w.meaning ? `<div class="meaning">${esc(w.meaning)}</div>` : ''}
+          ${sentencesHtml ? `<div class="sentences">${sentencesHtml}</div>` : ''}
+        </div>
+        <div class="review-actions">
+          <button class="btn-forgot" id="btnForgot">还没记住</button>
+          <button class="btn-known" id="btnKnown">记住了</button>
+        </div>
+        <div class="review-tip">下次复习：记住了将拉长复习间隔，没记住将从头开始</div>`;
+      }
+
+      $main.innerHTML = html;
+
+      if(!S.cardFlipped){
+        document.getElementById('flipCard').onclick = ()=>{
+          S.cardFlipped = true;
+          Vocab.render.main();
+        };
+      } else {
+        document.getElementById('btnForgot').onclick = ()=>Vocab.review.grade(false);
+        document.getElementById('btnKnown').onclick = ()=>Vocab.review.grade(true);
+      }
+    },
+
+    list(){
+      const S = Vocab.state;
+      const $main = Vocab.dom.main;
+      const esc = Vocab.utils.escapeHtml;
+
+      let html = `<input class="search" id="searchBox" placeholder="搜索单词…" />`;
+      if(S.words.length === 0){
+        html += `<div class="empty-state">还没有单词，去「添加」录入吧</div>`;
+        $main.innerHTML = html;
+        return;
+      }
+      html += `<div id="listItems"></div>`;
+      $main.innerHTML = html;
+
+      function draw(filter){
+        const list = S.words
+          .slice()
+          .sort((a,b)=>b.createdAt - a.createdAt)
+          .filter(w => !filter || w.word.toLowerCase().includes(filter.toLowerCase()));
+        const el = document.getElementById('listItems');
+        if(list.length === 0){
+          el.innerHTML = `<div class="empty-state">没有匹配的单词</div>`;
+          return;
+        }
+        el.innerHTML = list.map(w=>`
+          <div class="word-item" data-id="${w.id}">
+            <div class="top">
+              <span class="w">${esc(w.word)}</span>
+              <span class="box">盒${w.box}</span>
+            </div>
+            ${w.meaning ? `<div class="m">${esc(w.meaning)}</div>` : ''}
+            <div class="s-count">${(w.sentences||[]).length} 个例句 · 下次复习 ${Vocab.utils.formatDate(w.nextReview)}</div>
+            <div class="actions">
+              <button class="editBtn">编辑</button>
+              <button class="delBtn">删除</button>
+            </div>
+          </div>
+        `).join('');
+        el.querySelectorAll('.editBtn').forEach(btn=>{
+          btn.onclick = ()=>{
+            S.editingId = btn.closest('.word-item').dataset.id;
+            S.currentTab = 'add';
+            Vocab.render.main();
+          };
+        });
+        el.querySelectorAll('.delBtn').forEach(btn=>{
+          btn.onclick = ()=>{
+            const id = btn.closest('.word-item').dataset.id;
+            if(confirm('确定删除这个单词吗？')){
+              S.words = S.words.filter(w=>w.id !== id);
+              Vocab.storage.save();
+              draw(document.getElementById('searchBox').value);
+            }
+          };
+        });
+      }
+      draw('');
+      document.getElementById('searchBox').oninput = (e)=>draw(e.target.value);
+    },
+
+    add(){
+      const S = Vocab.state;
+      const $main = Vocab.dom.main;
+      const esc = Vocab.utils.escapeHtml;
+      const editing = S.editingId ? S.words.find(w=>w.id === S.editingId) : null;
+
+      $main.innerHTML = `
+        <div class="field">
+          <label>单词</label>
+          <input id="wordInput" type="text" value="${esc(editing ? editing.word : '')}" placeholder="例如 abandon" autocomplete="off" autocapitalize="off" />
+        </div>
+        <div class="field">
+          <label>释义 / 备注（可选）</label>
+          <input id="meaningInput" type="text" value="${esc(editing ? (editing.meaning||'') : '')}" placeholder="例如 放弃，抛弃" />
+        </div>
+        <div class="field">
+          <label>例句</label>
+          <textarea id="sentencesInput" placeholder="每行一句，可以是你自己写的或摘录的句子">${esc(editing ? (editing.sentences||[]).join('\\n') : '')}</textarea>
+          <div class="sub">一行一句，回车换行即可</div>
+        </div>
+        <button class="submit-btn" id="saveBtn">${editing ? '保存修改' : '添加到词库'}</button>
+        ${editing ? '<button class="submit-btn" id="cancelBtn" style="background:var(--sand);color:var(--ink-soft);margin-top:10px;">取消编辑</button>' : ''}
+      `;
+
+      document.getElementById('saveBtn').onclick = ()=>{
+        const word = document.getElementById('wordInput').value.trim();
+        const meaning = document.getElementById('meaningInput').value.trim();
+        const sentences = document.getElementById('sentencesInput').value
+          .split('\n').map(s=>s.trim()).filter(Boolean);
+
+        if(!word){
+          Vocab.utils.toast('请先填写单词');
+          return;
+        }
+
+        if(editing){
+          editing.word = word;
+          editing.meaning = meaning;
+          editing.sentences = sentences;
+          Vocab.storage.save();
+          Vocab.utils.toast('已保存');
+          S.editingId = null;
+          S.currentTab = 'list';
+        } else {
+          S.words.push({
+            id: Vocab.utils.uid(),
+            word, meaning, sentences,
+            box: 0,
+            nextReview: Date.now(),
+            createdAt: Date.now(),
+            reviewCount: 0,
+            lastReviewed: null
+          });
+          Vocab.storage.save();
+          Vocab.utils.toast('已添加');
+        }
+        S.reviewQueue = [];
+        Vocab.render.main();
+      };
+
+      const cancelBtn = document.getElementById('cancelBtn');
+      if(cancelBtn){
+        cancelBtn.onclick = ()=>{
+          S.editingId = null;
+          S.currentTab = 'list';
+          Vocab.render.main();
+        };
+      }
+    }
+  },
+
+  init(){
+    this.dom.main = document.getElementById('main');
+    this.dom.headerCount = document.getElementById('headerCount');
+    this.dom.toast = document.getElementById('toast');
+    this.dom.offlineBanner = document.getElementById('offlineBanner');
+
+    document.querySelectorAll('nav.tabbar button').forEach(btn=>{
+      btn.onclick = ()=>{
+        const S = this.state;
+        S.currentTab = btn.dataset.tab;
+        if(S.currentTab === 'add') S.editingId = null;
+        if(S.currentTab === 'review'){
+          S.reviewQueue = this.review.buildQueue(false);
+          S.reviewIndex = 0;
+          S.cardFlipped = false;
+        }
+        this.render.main();
+      };
+    });
+
+    window.addEventListener('online', ()=>this.dom.offlineBanner.style.display='none');
+    window.addEventListener('offline', ()=>this.dom.offlineBanner.style.display='block');
+    if(!navigator.onLine) this.dom.offlineBanner.style.display='block';
+
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', ()=>{
+        navigator.serviceWorker.register('./sw.js').catch(()=>{});
+      });
+    }
+
+    this.storage.load();
+    this.state.reviewQueue = this.review.buildQueue(false);
+    this.render.main();
+  }
+};
+
+Vocab.init();
+window.Vocab = Vocab; // 方便控制台调试：Vocab.state.words
+</script>
+</body>
+</html>
