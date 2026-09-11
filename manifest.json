@@ -1,6 +1,6 @@
 {
-  "name": "背单词",
-  "short_name": "背单词",
+  "name": "Grain",
+  "short_name": "Grain",
   "description": "单词录入、间隔重复复习工具",
   "start_url": "./Grain.html",
   "scope": "./",
