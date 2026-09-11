@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>背单词</title>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4F46E5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="背单词">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAOqklEQVR4nO3deXgU5R0H8O/slWyyyebYgAjyIHiA+qDy0CoqRRSpUkWlaqv4KEo1VqgWpVgt8lSq3ARBH/DisRxV4BFvPKgYRcWIiUStIHIIAVTIsclm72v6RwwGkt3MnrM77/fzH8ns7rD5fec95p0ZCRnm6tGHZLX3gVLntY29JbX3oSNVd4bFToC6oUj7B7PoKZp0hyFtH8bCp1ikKwgp/xAWPiUi1UFI2Zuz8CmZUhWEpL8pC59SKdlB0CXzzVj8lGrJrrGkpImFT2pIRmuQcAvA4ie1JKP2EgoAi5/UlmgNxh0AFj9likRqMa4AsPgp08RbkzEHgMVPmSqe2owpACx+ynSx1qjiALD4KVvEUquKAsDip2yjtGa7DQCLn7KVktpN6lIIomwTNQA8+lO2666GIwaAxU9aEa2W2QUioXUZAB79SWsi1TRbABJapwDw6E9a1VVtswUgoR0TAB79SeuOr3G2ACS0owHg0Z9E0bHW2QKQ0BgAEpoOYPeHxNNe82wBSGgMAAmNASChMQAkNIkDYBIZWwASGgNAQmMASGgMAAmNASChMQAkNAaAhMYAkNAYABIaA0BCYwBIaAwACc2g9g6kmtEoYfQVeWhqCmHv7gAO/xRSe5cog2g+AKU2PcbfVoi8vLaHijudYezZFcD2r/2o2uLF/u8DKu8hqUmI5dAXDDdj2vTiLn/34w9BVH3ixaaNbhysC6Z5zzLH2efmwGiUUL3Vq/aupJUQAQCAP/3ZiiuvyY/4e1kGPtvixfq1Tuza6U/jnqmvbz8D5iwqg9ksYf1aJ15Y4UA4rPZepYcwATAYJMxeZMOppxm73fbTT7x4akkzWpq1XwXFJXrMW2xDWQ/90Z/97ysfFs6yw27X/v9fmFmgYFDGkvl2BIPd533Yhbl44pkeGHZRbhr2TD25uRKmzyw5pvgB4KzBOahY1gNnDc5Rac/SR5gAAMCBuiDW/cepaNtCqw7TppdgzNjI3aZsJknAfX8vxoBTu24Ri4t1mDm3FNf90QJJSvPOpZFQAQCA9euc2LdX2cyPJAF3TrLiiqu0F4KJd1nx62HRWzidDrj5tkJMn1kCS4E2S0WYMUBHA04xYv4TZdAp/JsGgzKmTm7AvihTpqU2PaY+2PVMU6YxmCRFY6GO6o+EMO9Ru+YmCIQMAABM+msRLrsiT/H2e3YHcP+k+qjbLHu+B3qdqN1TK8GgjOefdmDD6y61dyVptNmuKbBmdSv8fuXZH3CKEacPMkXdpupjbc+hGwwS7phkxdSHihW3nplOu4erbjQ2hPD2Gy5c/XuL4tdcNMKMnTsidwFWLHdgxXJHMnYv5U4baMK8xbaYX+f1yPii2qeZ8wTCBgAA1q91YvSYfJjNyqY5evcR9+va/V0AW6u8eHeDS1PnR8T9iwJwtITxzpsuXHu9slZAaVC0xu+XMfUv0cc/2UojPbn4Vf7XrXjb+nquJNUa4QNQtz+IvbuVnRf4/DNtD3JFJHwAAOCDTZ5ut/nhYDCjZ3lyc8XsniWKAQDwUaUbrY7IAztHSxjzHrUjEMjMUyaSBEx7uARTphXDaGQQYiH0ILid3R5G+a2HMXacBcNHmo/O9ng9MrZ87MHq51vR1Ji5/f9rrrdgyNC2hWs9e+kx659NcLRoZ6YmlRiAn7ndMtasbsWa1a2wWHTQ6QGXS0ZIwepRNZ0+yISbJxQe/ffAM0yYv7gM/3q4EQcPiHuBj1LsAnXB6QzD0RLO+OK3WHSY+lAx9MeuZkbPXnrMedyGM86KfuaaGIBj2Mr0WTWYnHxfUae1/O0sFh0emVOKi0aY07xX2YUB+FmpTY/HFtgwa6ENJaVdF1Um+d3YfJx/YfTlzEajhPsfLMY11ylf7iEaBgBtF788MqcUPU/Qo/8pRsxfYkO//rEtF06n/qcYMeHOwu43RNsM0YQ7CnHLRGXbi0b4QbDFosPMOaXoc9IvX0WpTY/ZFTbMf6wJX3zui/r6kaPycMP49B5hrUX6mKc7x91ggaVAh2WLmyFn9tAmrYQOQK5ZwozHSro82pvNEqbPLMWzS1vw9huR17/v2eXPmmsARl+Rh4N1Qbz+srLLQkUgbBfIlCPh4ZmlOG1g5JkSnQ4on2zF7eWFEa+LrdsfRGND5p4jaNfUGMInmz3YXKl87ZMIsuPQ1Y2+/QxY8nSPlL3/2HEW9OxlQMVsO3y+zv2HieMPp+yzKbU00QLU7Qvi8I+pPQqfNywXsxbaUFyS+TNEpJwmWgAAqNzkxshReZBlGeFw253e5DAQlgE5LEOWcfTnYRkoKJBwQq/Y/vsDTm2bIfrH1AbeZFcjNBOANatasWZVq+LtR1xixpQHYruLQygE1Gz1orGB62y0QjMBSKXaGh8+fN+D2hqvELcLFAkDoMDWKi8q3+PsiRZpYhBMFC8GIEtp+X6d6cQAJFlOjhTxhrPJYjBImPFoKW64qYBBSBDHAElmzpOw8Mky7Nzhx1tvuLBlszepl1JKEnDv1CKcOzQH5w7NwcAzTVg01x71kk6KjC1Aipw+yIQp04rx3OqeGD+hALay5JxAu+3OQgwf+csa/yFDc7BoaVm3t22krjEAKWYt0uH6GwvwzMqeeGBGCQafE/9DJ669wYKx4zqvPLWV6TFrQSmuulZ7t3FPNXaB0kSna3vyzLALc3GwLogNr7vwwXtueDzKukcXX2rGLbdHXtOvN0iYeJcVg8404cmKZrjdXPOsBAOggj59DSifbEX5ZGvS3/uC4Wb062/EvH/Zoz7PgNqwC6RBJ/Y2YN5iG0b9VvnzD0TFFkBFjQ0hhBSuqZMkRLwAviumHAmT7yuCxyPjk83d3/lOVAyAiqbd26D4YhqdDnj57RMVbet2y6jZ6sUHmzyoEezB17FiADRo+t8aFN/wV3QcA2iQVp7ekg4MAAmNASChMQAkNAaAhMYAkNAYABIaA0BCYwBIaAwACY0BIKExACQ0BoCExgCQ0BgAEhoDQEJjAEhovCJMRbMrbAiFlN2+hLdATA0GQEU9evJxS2pjFyhBkgRcclkeRo7iLUiyEVuABJw8wIjyyVYMPMOEdza4UPlebK+fOP5wSu4KQcoxAHGwWHS46dYCXH5lPnQ6oP5ICCufc6i9WxQHBiAGkgRcOjoPt0wsRKG1rfcoy8CSBbwXZ7ZiABQacGpbd+f4J8u/+aoLX3/pU2mvKFEMgAJjrsrHHXdbO01F7v8+gJXLM6/rE1Y4tUoMgCJ9+nb+mgIBGRVzm5P69JdE7d0dwEtrnKjbH1R7V7KGsAHQ6RI7s7RyuQP7Vb79eCgEfLfDj21f+PB5lRff7+HtEGMlbACKS+I/BVJb48Obr7oS+ny3W4bLpfwehrIMLJhlBwA4HGE01IfQcCQEvz9zWqBsJGQAJAk474LcuF7bbA/j8fl2yAnU3b69ASxe0AyvwqfDAG0B+PhD3uY82YQMwPU3FsT1UDlZBhbNtaPZHvvdZ/1+GduqffjgPTeqtngTChAlj1AByLfocOfdVoy41Nz9xl1Yv8aJL7dFn/IMBIDqz7wIBtsegHHkcAg//RDEl7W+mI74lB5CBECSgN9cYsaEO6woLo6v77/jGz9eXNX9lKfLGcajM5ri+gxKPyECcPaQHEyZVhz3652tYSycbVf8OCPKHkKsBq2t8eHTj+N7VJAsA4/Pa0ZDPatfi4QIAAA89UQzWh2xD17XvdCKag0+Z0vPSxEACBSAluYwnl3aEtNrvqj2Yc2q1hTtkbp6nBBDAjQ8dhdiDNBuc6UHwy8241fnd38OoP5ICBVzEpvvT7bLr8zH8BFmuFxhuN0y3K4wPB4ZHncYnp9PrHk88s8/k+H1hOH1yvB6Zfh9MgIBGQajhJP7G/GHmwoUf67Pl0FfQpIJFQAAWLakBWecZUK+JXLj5/fLmDOzCc7WzHra3OGfgmhuDqHPSQb06WtMWzfG62UANKOpMYTlTztwz/1FEbd5blkL9uzKvHU126p92Fbddh7CaJTQr78Rg88x4ewhORh0pglGY2qunLc3aXcCQLgAAMD7G924aIQZQ4bmdPqdszWMTe+6Vdir2AQCMnbt9GPXTj/Wr3Ui1yzh4kvyMGZsPvr2S+6fdd9e7a4uFWYQfLylj3d9FdfWKm9Wzvd7PTLe2eDCPeVHUDHHDnscyzUi+XaHP2nvlWmEDUBDfQj/fvbYWaFwGHhlnVOlPUqezZUe3Ft+BPuSsFzb7Qpjy2btLsITNgAAsPEtN77qsLbnzVedOFCnjebe0RLGjAca4WhJrCV4/RWXpgfBQgcAAJ5c1AyvV0ZtjQ8rNHZnB0dLGC8mcB6jtsaHtau1eR6knXT16EPajbdCZw42Yef2AIJB7X0VJpOEVS+dgJyc2GaIPqr0YNkS7d/tQshZoON985V2B3nt1yGcf6GyC4B+OBTEi6ta8VGldvv9HTEAAvh2uz9qAJytYXy5zYd333Lj61pfRp39TjUGQADtA3tZblsT9eOhIA4dDOK7b/3Y/o0fhw4EhSr6jjgGEIDJJMFapIO9KazJcU4i2AIIwO+XUX8kC8/upYHw06AkNgaAhMYAkNAYABIaA0BCYwBIaAwACY0BIKExACQ0BoCExgCQ0BgAEprutY29U3MzGaIM99rG3hJbABIaA0BCYwBIaAwACU0HtA0G1N4RonRqr3m2ACQ0BoCEdjQA7AaRKDrWOlsAEtoxAWArQFp3fI2zBSChdQoAWwHSqq5qmy0ACa3LALAVIK2JVNNsAUhoEQPAVoC0IlotR20BGALKdt3VMLtAJLRuA8BWgLKVktpV1AIwBJRtlNas4i4QQ0DZIpZajWkMwBBQpou1RmMeBDMElKniqc24ZoEYAso08dZk3NOgDAFlikRqMaHzAAwBqS3RGkz4RBhDQGpJRu0ltXj51HlKh2QedJO6FIKtAaVasmssZQXL1oCSKVUH15QfsRkESkSqexVp67IwCBSLdHWn095nZxAomnSPI1UdtDIMBKg7eZJxszYMhbZl2kzh/wGylfGhsknzaAAAAABJRU5ErkJggg==">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+
+<style>
+  :root{
+    --bg: #F4F5F7;
+    --surface: #FFFFFF;
+    --surface-2: #ECEEF2;
+    --border: #E2E4E9;
+    --ink: #14161A;
+    --ink-soft: #6B7280;
+    --ink-faint: #9CA3AF;
+    --accent: #4F46E5;
+    --accent-soft: #EEF0FF;
+    --accent-deep: #3730A3;
+    --danger: #DC4C4C;
+    --danger-soft: #FDECEC;
+    --success: #16A34A;
+    --success-soft: #E8F7EE;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --shadow: 0 1px 3px rgba(20,22,26,0.06), 0 1px 2px rgba(20,22,26,0.04);
+    --shadow-lg: 0 12px 28px rgba(20,22,26,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Roboto,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+    overscroll-behavior-y:none;
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  header{
+    padding:calc(18px + env(safe-area-inset-top,0)) 20px 14px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  header h1{
+    font-size:20px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:-0.02em;
+  }
+  header .count{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .icon-btn{
+    width:30px; height:30px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--ink-soft);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .icon-btn svg{ width:15px; height:15px; }
+  .icon-btn:active{ background:var(--surface-2); }
+
+  .backup-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 4px;
+    border-bottom:1px solid var(--border);
+    cursor:pointer;
+  }
+  .backup-row:last-child{ border-bottom:none; }
+  .backup-row .bk-icon{
+    width:38px; height:38px;
+    border-radius:11px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .backup-row .bk-icon svg{ width:19px; height:19px; }
+  .backup-row .bk-text .bk-title{ font-size:15px; font-weight:700; }
+  .backup-row .bk-text .bk-desc{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .backup-stats{
+    background:var(--surface-2);
+    border-radius:var(--radius-sm);
+    padding:12px 14px;
+    font-size:13.5px;
+    line-height:1.9;
+    margin:14px 0;
+  }
+  .conflict-banner{
+    position:fixed;
+    left:50%; bottom:24px;
+    transform:translateX(-50%);
+    z-index:40;
+    background:var(--surface);
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);
+    padding:14px 16px;
+    max-width:340px;
+    width:calc(100% - 32px);
+    font-size:13px;
+    line-height:1.6;
+    color:var(--ink);
+  }
+  main{
+    flex:1;
+    padding:4px 16px 100px;
+    overflow-y:auto;
+  }
+
+  /* ── 单词列表 ── */
+  .word-card{
+    background:var(--surface);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:14px 16px;
+    margin-bottom:10px;
+    cursor:pointer;
+  }
+  .word-card .row1{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .word-card .row1-right{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .word-card .word{
+    font-size:17px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .word-card .pos{
+    font-size:11px;
+    color:var(--accent);
+    background:var(--accent-soft);
+    padding:1px 7px;
+    border-radius:20px;
+    font-weight:600;
+  }
+  .status-badge{
+    font-size:10.5px;
+    font-weight:700;
+    padding:1px 7px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .status-badge.mastered{ background:var(--success-soft); color:var(--success); }
+  .status-badge.learning{ background:var(--surface-2); color:var(--ink-faint); }
+  .word-card .meaning{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin-top:3px;
+  }
+  .word-card .example{
+    font-size:13px;
+    color:var(--ink-faint);
+    margin-top:7px;
+    padding-top:7px;
+    border-top:1px solid var(--border);
+    line-height:1.5;
+  }
+  .word-card .tags{
+    display:flex;
+    gap:6px;
+    margin-top:8px;
+    flex-wrap:wrap;
+  }
+  .word-card .tag-chip{
+    font-size:11px;
+    color:var(--ink-soft);
+    background:var(--surface-2);
+    padding:2px 8px;
+    border-radius:20px;
+  }
+
+  .empty-state{
+    text-align:center;
+    color:var(--ink-faint);
+    padding:80px 24px 40px;
+    font-size:14px;
+    line-height:1.7;
+  }
+  .empty-state .big{
+    font-size:17px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+
+  /* ── FAB ── */
+  .fab{
+    position:fixed;
+    right:20px;
+    bottom:calc(78px + env(safe-area-inset-bottom,0)); /* 抬高到底部导航栏上方 */
+    width:56px;height:56px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    font-size:28px;
+    line-height:1;
+    box-shadow:var(--shadow-lg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:15;
+  }
+  .fab:active{ background:var(--accent-deep); }
+  #app > .fab{
+    position:absolute;
+  }
+
+  /* ── 底部导航栏 ── */
+  .nav-bar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    max-width:480px;
+    margin:0 auto;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    display:flex;
+    padding-bottom:env(safe-area-inset-bottom,0);
+    z-index:14;
+  }
+  #app > .nav-bar{ position:absolute; }
+  .nav-btn{
+    flex:1;
+    background:none;
+    border:none;
+    padding:10px 4px 8px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    font-family:inherit;
+    font-size:11.5px;
+    color:var(--ink-faint);
+    cursor:pointer;
+  }
+  .nav-btn .nav-icon{ display:flex; align-items:center; justify-content:center; }
+  .nav-btn .nav-icon svg{ width:20px; height:20px; }
+  .nav-btn.active{ color:var(--accent); font-weight:700; }
+
+  /* ── Bottom sheet ── */
+  .sheet-overlay{
+    position:fixed; inset:0;
+    background:rgba(20,22,26,0.4);
+    opacity:0; pointer-events:none;
+    transition:opacity .2s;
+    z-index:20;
+  }
+  .sheet-overlay.show{ opacity:1; pointer-events:auto; }
+  .sheet{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    max-width:480px;
+    margin:0 auto;
+    background:var(--surface);
+    border-radius:20px 20px 0 0;
+    padding:10px 20px calc(20px + env(safe-area-inset-bottom,0));
+    max-height:88vh;
+    overflow-y:auto;
+    transform:translateY(100%);
+    transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    z-index:21;
+    box-shadow:0 -8px 30px rgba(20,22,26,0.12);
+  }
+  .sheet.show{ transform:translateY(0); }
+  .sheet-handle{
+    width:36px; height:4px;
+    background:var(--border);
+    border-radius:4px;
+    margin:6px auto 14px;
+  }
+  .sheet-title{
+    font-size:17px;
+    font-weight:700;
+    margin-bottom:16px;
+  }
+  .sheet-back{
+    display:flex; align-items:center; gap:2px;
+    background:none; border:none;
+    color:var(--ink-soft);
+    font-size:14px; font-weight:600;
+    font-family:inherit;
+    padding:2px 0 14px;
+    cursor:pointer;
+  }
+  .sheet-back svg{ width:16px; height:16px; }
+
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+    font-weight:600;
+  }
+  .field input, .field textarea, .field select{
+    width:100%;
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    background:var(--surface);
+    padding:11px 12px;
+    font-family:inherit;
+    font-size:16px;
+    color:var(--ink);
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{
+    outline:none;
+    border-color:var(--accent);
+  }
+  .field textarea{ min-height:64px; resize:vertical; line-height:1.5; }
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; }
+
+  .more-toggle{
+    background:none; border:none; padding:6px 0 14px;
+    font-size:13px; color:var(--accent); font-weight:600;
+    font-family:inherit; cursor:pointer;
+    display:flex; align-items:center; gap:5px;
+  }
+  .more-toggle .arrow{ font-size:10px; transition:transform .15s; }
+  .more-toggle.open .arrow{ transform:rotate(90deg); }
+  .more-fields{ display:none; flex-direction:column; }
+  .more-fields.open{ display:flex; }
+
+  .sheet-actions{
+    display:flex; gap:10px; margin-top:6px;
+  }
+  .btn{
+    flex:1;
+    border:none;
+    border-radius:var(--radius-sm);
+    padding:13px;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-primary:active{ background:var(--accent-deep); }
+  .btn-danger{ background:var(--danger-soft); color:var(--danger); flex:none; padding:13px 18px; }
+
+  /* ── 复习：模式切换 ── */
+  .review-mode-toggle{
+    display:flex; gap:8px;
+    margin:6px 0 16px;
+  }
+  .mode-btn{
+    flex:1;
+    padding:9px 10px;
+    border-radius:20px;
+    border:1.5px solid var(--border);
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-size:13px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .mode-btn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .review-progress{
+    font-size:12.5px;
+    color:var(--ink-faint);
+    margin-bottom:10px;
+  }
+
+  /* ── 复习卡片 ── */
+  @keyframes cardFlipIn{
+    from{ transform:scaleX(0.9) rotateY(8deg); opacity:0.3; }
+    to{ transform:scaleX(1) rotateY(0deg); opacity:1; }
+  }
+  .review-card{
+    background:var(--surface);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    min-height:300px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:28px 22px;
+    text-align:center;
+    cursor:pointer;
+    animation:cardFlipIn .28s cubic-bezier(.2,.8,.2,1);
+    transform-origin:center;
+  }
+  .review-card:active{ transform:scale(0.98); }
+  .review-card .rc-word{
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  .review-card .rc-phonetic{
+    font-size:14px;
+    color:var(--ink-faint);
+    margin-top:6px;
+  }
+  .review-card .rc-hint{
+    margin-top:20px;
+    font-size:13px;
+    color:var(--ink-faint);
+  }
+  .review-card.flipped{
+    align-items:stretch;
+    text-align:left;
+    cursor:default;
+    padding:22px;
+  }
+  .review-card .rc-back-word{
+    font-size:22px;
+    font-weight:800;
+  }
+  .review-card .rc-meaning{
+    color:var(--accent);
+    font-size:15px;
+    font-weight:600;
+    margin-top:6px;
+  }
+  .review-card .rc-example{
+    border-top:1px solid var(--border);
+    margin-top:14px;
+    padding-top:12px;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink-soft);
+  }
+
+  .review-actions{ display:flex; gap:10px; margin-top:16px; }
+  .review-actions button{
+    flex:1; border:none; border-radius:var(--radius-sm);
+    padding:14px 10px; font-family:inherit; font-size:14.5px; font-weight:700; cursor:pointer;
+  }
+  .btn-forgot{ background:var(--danger-soft); color:var(--danger); }
+  .btn-known{ background:var(--accent); color:#fff; }
+
+  .toast{
+    position:fixed;
+    bottom:30px; left:50%;
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:20px;
+    font-size:13px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s;
+    z-index:30;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Grain</h1>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="count" id="headerCount"></span>
+      <button class="icon-btn" id="settingsBtn" aria-label="备份设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </header>
+  <main id="main"></main>
+
+  <nav class="nav-bar">
+    <button class="nav-btn" data-tab="list"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H2z"/><path d="M22 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></svg></span><span>词库</span></button>
+    <button class="nav-btn" data-tab="review"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><span>复习</span></button>
+  </nav>
+
+  <button class="fab" id="fabAdd">+</button>
+
+  <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;">
+
+  <div class="sheet-overlay" id="backupOverlay"></div>
+  <div class="sheet" id="backupSheet">
+    <div class="sheet-handle"></div>
+    <div id="backupBody"></div>
+  </div>
+
+  <div class="sheet-overlay" id="sheetOverlay"></div>
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheetTitle">添加单词</div>
+
+    <div class="field"><label>单词 *</label><input id="fWord" autocomplete="off" autocapitalize="off" placeholder="例如 abandon"></div>
+    <div class="field"><label>释义 *</label><input id="fMeaning" autocomplete="off" placeholder="例如 放弃，抛弃"></div>
+    <div class="field"><label>例句</label><textarea id="fExample" placeholder="例如 He abandoned the car."></textarea></div>
+
+    <button type="button" class="more-toggle" id="moreToggle">
+      <span class="arrow">▸</span><span>更多（音标 / 词性 / 标签…）</span>
+    </button>
+    <div class="more-fields" id="moreFields">
+      <div class="field-row">
+        <div class="field"><label>音标</label><input id="fPhonetic" autocomplete="off" placeholder="/əˈbændən/"></div>
+        <div class="field"><label>词性</label><input id="fPos" autocomplete="off" placeholder="v."></div>
+      </div>
+      <div class="field"><label>例句释义</label><textarea id="fExampleZh" placeholder="他抛弃了那辆车。"></textarea></div>
+      <div class="field"><label>标签</label><input id="fTag" autocomplete="off"></div>
+      <div class="field-row">
+        <div class="field"><label>场景</label><input id="fScene" autocomplete="off"></div>
+        <div class="field"><label>领域</label><input id="fDomain" autocomplete="off"></div>
+      </div>
+      <div class="field"><label>关联词</label><input id="fRelated" autocomplete="off"></div>
+      <div class="field-row">
+        <div class="field">
+          <label>状态</label>
+          <select id="fStatus">
+            <option value="1">学习中</option>
+            <option value="2">已掌握</option>
+          </select>
+        </div>
+        <div class="field"><label>录入日期</label><input id="fDate" type="date"></div>
+      </div>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn btn-danger" id="deleteBtn" style="display:none;">删除</button>
+      <button class="btn btn-primary" id="saveBtn">保存</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/*
+ * 命名空间约定：所有状态/逻辑/渲染都挂在 App 下面，不在顶层再声明裸变量/函数。
+ *   App.config   —— 常量配置
+ *   App.state    —— 运行时状态
+ *   App.storage  —— 读写 localStorage
+ *   App.render   —— 渲染函数
+ *   App.utils    —— 工具函数
+ * 调试时控制台可以直接用 App.state.words 查看数据。
+ */
+const App = {
+
+  config: {
+    STORAGE_KEY: 'words-v2-data',
+    REVIEW_MODE_KEY: 'words-v2-review-mode',
+    // 间隔重复：盒子编号对应的复习间隔天数，答对了盒子往上升、间隔拉长；答错了打回盒0
+    SR_DAY: 24 * 60 * 60 * 1000,
+    SR_INTERVALS: [0, 1, 2, 4, 7, 15],
+    get SR_MAX_BOX(){ return this.SR_INTERVALS.length - 1; }
+  },
+
+  state: {
+    words: [],
+    editingId: null,
+    currentTab: 'list', // 'list' 词库 | 'review' 复习
+    reviewDueOnly: true,  // true=只看今日到期 false=全部单词
+    reviewQueue: [],
+    reviewIndex: 0,
+    reviewFlipped: false
+  },
+
+  dom: {},
+
+  storage: {
+    load(){
+      try{
+        const raw = localStorage.getItem(App.config.STORAGE_KEY);
+        App.state.words = raw ? JSON.parse(raw) : [];
+      }catch(e){
+        App.state.words = [];
+        App.utils.toast('本地数据读取失败');
+      }
+      // 防御性迁移：万一以后从别处导入数据、缺 box/nextReview 字段，这里补上，
+      // 不然复习功能会因为 undefined 报错
+      let migrated = false;
+      App.state.words.forEach(w=>{
+        if(typeof w.box !== 'number' || !w.nextReview){
+          w.box = 0;
+          w.nextReview = Date.now();
+          migrated = true;
+        }
+      });
+      if(migrated) App.storage.save();
+    },
+    save(opts){
+      try{
+        localStorage.setItem(App.config.STORAGE_KEY, JSON.stringify(App.state.words));
+        if(!(opts && opts.skipAutoPush)) App.gist.scheduleAutoPush();
+      }catch(e){
+        App.utils.toast('保存失败，存储空间可能已满');
+      }
+    }
+  },
+
+  utils: {
+    uid(){ return 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); },
+    escapeHtml(str){
+      return String(str || '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    },
+    toast(msg){
+      const el = App.dom.toast;
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(App.utils._toastTimer);
+      App.utils._toastTimer = setTimeout(()=>el.classList.remove('show'), 1600);
+    },
+    // 用线条 SVG 换掉 emoji：emoji 不吃 currentColor，换设备/字体样子还不一样，
+    // 跟我们特地调的靛蓝配色系统脱节。这些图标统一用 stroke="currentColor"，
+    // 套在什么颜色的容器里就跟着变什么颜色。
+    icons: {
+      book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H2z"/><path d="M22 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></svg>',
+      refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+      gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+      download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+      cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
+      chevronLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>'
+    }
+  },
+
+  render: {
+    main(){
+      App.render.syncNav();
+      const S = App.state;
+      if(S.currentTab === 'review') App.render.review();
+      else App.render.list();
+    },
+
+    syncNav(){
+      const S = App.state;
+      document.querySelectorAll('.nav-btn').forEach(b=>{
+        b.classList.toggle('active', b.dataset.tab === S.currentTab);
+      });
+    },
+
+    list(){
+      const S = App.state;
+      App.dom.headerCount.textContent = S.words.length ? String(S.words.length) : '';
+      const $main = App.dom.main;
+
+      if(S.words.length === 0){
+        $main.innerHTML = `<div class="empty-state">
+          <div class="big">还没有单词</div>
+          <div>点右下角 "+" 添加第一个吧</div>
+        </div>`;
+        return;
+      }
+
+      const esc = App.utils.escapeHtml;
+      const list = S.words.slice().sort((a,b)=>b.createdAt - a.createdAt);
+      $main.innerHTML = list.map(w=>{
+        const tags = [w.pos, w.tag, w.scene, w.domain].filter(Boolean);
+        const mastered = w.status === 2;
+        return `<div class="word-card" data-id="${w.id}">
+          <div class="row1">
+            <span class="word">${esc(w.word)}</span>
+            <span class="row1-right">
+              ${w.pos ? `<span class="pos">${esc(w.pos)}</span>` : ''}
+              <span class="status-badge ${mastered ? 'mastered' : 'learning'}">${mastered ? '已掌握' : '学习中'}</span>
+            </span>
+          </div>
+          <div class="meaning">${esc(w.meaning)}</div>
+          ${w.example ? `<div class="example">${esc(w.example)}${w.exampleZh ? '<br>' + esc(w.exampleZh) : ''}</div>` : ''}
+          ${tags.length && (w.tag || w.scene || w.domain) ? `<div class="tags">${[w.tag,w.scene,w.domain].filter(Boolean).map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      $main.querySelectorAll('.word-card').forEach(card=>{
+        card.onclick = ()=>App.sheet.openEdit(card.dataset.id);
+      });
+    },
+
+    // 复习页面：只负责把 state.reviewQueue/reviewIndex/reviewFlipped 画出来，
+    // 不在这里重建队列——重建队列的活由 App.review.start() 做
+    review(){
+      const S = App.state;
+      const $main = App.dom.main;
+      App.dom.headerCount.textContent = '';
+      const esc = App.utils.escapeHtml;
+
+      const modeToggleHtml = `<div class="review-mode-toggle">
+        <button class="mode-btn ${S.reviewDueOnly ? 'active':''}" id="modeDueBtn">今日复习</button>
+        <button class="mode-btn ${!S.reviewDueOnly ? 'active':''}" id="modeAllBtn">全部单词</button>
+      </div>`;
+
+      if(S.words.length === 0){
+        $main.innerHTML = modeToggleHtml + `<div class="empty-state">
+          <div class="big">词库还是空的</div>
+          <div>先去"词库"添加几个单词吧</div>
+        </div>`;
+        App.render._bindModeButtons();
+        return;
+      }
+
+      if(S.reviewQueue.length === 0){
+        if(S.reviewDueOnly){
+          $main.innerHTML = modeToggleHtml + `<div class="empty-state">
+            <div class="big">今天要复习的都完成啦</div>
+            <div>可以点上面切到"全部单词"提前复习</div>
+          </div>`;
+        } else {
+          $main.innerHTML = modeToggleHtml + `<div class="empty-state">
+            <div class="big">暂无单词</div>
+          </div>`;
+        }
+        App.render._bindModeButtons();
+        return;
+      }
+
+      if(S.reviewIndex >= S.reviewQueue.length){
+        $main.innerHTML = modeToggleHtml + `<div class="empty-state">
+          <div class="big">本轮复习完成！</div>
+          <div>共复习了 ${S.reviewQueue.length} 个单词</div>
+        </div>
+        <button class="btn btn-primary" id="reviewAgainBtn" style="margin-top:14px;">再来一轮</button>`;
+        App.render._bindModeButtons();
+        document.getElementById('reviewAgainBtn').onclick = ()=>App.review.start(S.reviewDueOnly);
+        return;
+      }
+
+      const w = S.reviewQueue[S.reviewIndex];
+      let cardHtml;
+      if(!S.reviewFlipped){
+        cardHtml = `<div class="review-card" id="reviewCard">
+          <div class="rc-word">${esc(w.word)}</div>
+          ${w.phonetic ? `<div class="rc-phonetic">${esc(w.phonetic)}</div>` : ''}
+          <div class="rc-hint">点击卡片查看释义</div>
+        </div>`;
+      } else {
+        cardHtml = `<div class="review-card flipped" id="reviewCard">
+          <div class="rc-back-word">${esc(w.word)}${w.phonetic ? ` <span class="rc-phonetic">${esc(w.phonetic)}</span>` : ''}</div>
+          <div class="rc-meaning">${esc(w.meaning)}</div>
+          ${w.example ? `<div class="rc-example">${esc(w.example)}${w.exampleZh ? '<br>' + esc(w.exampleZh) : ''}</div>` : ''}
+        </div>
+        <div class="review-actions">
+          <button class="btn-forgot" id="btnForgot">还没记住</button>
+          <button class="btn-known" id="btnKnown">记住了</button>
+        </div>`;
+      }
+
+      $main.innerHTML = modeToggleHtml +
+        `<div class="review-progress">复习中 ${S.reviewIndex + 1} / ${S.reviewQueue.length}</div>` +
+        cardHtml;
+
+      App.render._bindModeButtons();
+      if(!S.reviewFlipped){
+        document.getElementById('reviewCard').onclick = ()=>{
+          S.reviewFlipped = true;
+          App.render.review();
+        };
+      } else {
+        document.getElementById('btnForgot').onclick = ()=>App.review.grade(false);
+        document.getElementById('btnKnown').onclick = ()=>App.review.grade(true);
+      }
+    },
+
+    _bindModeButtons(){
+      const dueBtn = document.getElementById('modeDueBtn');
+      const allBtn = document.getElementById('modeAllBtn');
+      if(dueBtn) dueBtn.onclick = ()=>App.review.setMode(true);
+      if(allBtn) allBtn.onclick = ()=>App.review.setMode(false);
+    }
+  },
+
+  review: {
+    isDue(w){ return (w.nextReview || 0) <= Date.now(); },
+
+    buildQueue(dueOnly){
+      const pool = dueOnly ? App.state.words.filter(App.review.isDue) : App.state.words.slice();
+      pool.sort((a,b)=>(a.nextReview||0) - (b.nextReview||0));
+      // 简单洗牌，避免每次都按同一个顺序背
+      for(let i = pool.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool;
+    },
+
+    // 进入复习页 / 切换模式 / 完成一轮后点"再来一轮" 都调这个，重新建队列
+    start(dueOnly){
+      const S = App.state;
+      S.reviewDueOnly = dueOnly;
+      localStorage.setItem(App.config.REVIEW_MODE_KEY, dueOnly ? '1' : '0');
+      S.reviewQueue = App.review.buildQueue(dueOnly);
+      S.reviewIndex = 0;
+      S.reviewFlipped = false;
+      App.render.review();
+    },
+
+    setMode(dueOnly){
+      if(dueOnly === App.state.reviewDueOnly) return;
+      App.review.start(dueOnly);
+    },
+
+    grade(correct){
+      const S = App.state;
+      const w = S.reviewQueue[S.reviewIndex];
+      const cfg = App.config;
+      w.box = correct ? Math.min((w.box || 0) + 1, cfg.SR_MAX_BOX) : 0;
+      w.nextReview = Date.now() + cfg.SR_INTERVALS[w.box] * cfg.SR_DAY;
+      App.storage.save();
+
+      S.reviewIndex++;
+      S.reviewFlipped = false;
+      App.render.review();
+    }
+  },
+
+  // 备份：JSON 导出/导入。选 JSON 不选 CSV，是因为字段能 100% 保真
+  // （box/nextReview 这些间隔重复字段也能完整带上），不用处理列名映射。
+  backup: {
+    pendingImport: null, // { list, newCount, dupCount, skipCount }
+
+    open(){
+      App.backup.renderMenu();
+      App.dom.backupOverlay.classList.add('show');
+      App.dom.backupSheet.classList.add('show');
+    },
+    close(){
+      App.dom.backupOverlay.classList.remove('show');
+      App.dom.backupSheet.classList.remove('show');
+      App.backup.pendingImport = null;
+      App.dom.importFileInput.value = ''; // 允许重复选同一个文件
+    },
+
+    renderMenu(){
+      const g = App.gist;
+      const ic = App.utils.icons;
+      const gistDesc = g.isConfigured()
+        ? (g.status || '已配置，改动会自动同步')
+        : '还没配置，点这里设置';
+      App.dom.backupBody.innerHTML = `
+        <div class="backup-row" id="exportRow">
+          <span class="bk-icon">${ic.download}</span>
+          <div class="bk-text">
+            <div class="bk-title">导出备份</div>
+            <div class="bk-desc">把当前所有单词存成一个 JSON 文件</div>
+          </div>
+        </div>
+        <div class="backup-row" id="importRow">
+          <span class="bk-icon">${ic.upload}</span>
+          <div class="bk-text">
+            <div class="bk-title">导入备份</div>
+            <div class="bk-desc">从之前导出的 JSON 文件恢复</div>
+          </div>
+        </div>
+        <div class="backup-row" id="gistRow">
+          <span class="bk-icon">${ic.cloud}</span>
+          <div class="bk-text">
+            <div class="bk-title">云同步</div>
+            <div class="bk-desc" id="gistMenuDesc">${gistDesc}</div>
+          </div>
+        </div>`;
+      document.getElementById('exportRow').onclick = App.backup.exportJson;
+      document.getElementById('importRow').onclick = ()=>App.dom.importFileInput.click();
+      document.getElementById('gistRow').onclick = ()=>App.gist.openSettings();
+    },
+
+    exportJson(){
+      const data = JSON.stringify(App.state.words, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'grain-backup-' + new Date().toISOString().slice(0,10) + '.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      App.utils.toast('已导出');
+      App.backup.close();
+    },
+
+    handleFile(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        let raw;
+        try{
+          raw = JSON.parse(ev.target.result);
+        }catch(err){
+          App.utils.toast('文件不是合法的 JSON');
+          return;
+        }
+        if(!Array.isArray(raw)){
+          App.utils.toast('文件格式不对，应该是一个单词数组');
+          return;
+        }
+
+        const existingSet = new Set(App.state.words.map(w => (w.word||'').toLowerCase() + '|' + (w.meaning||'').trim()));
+        let newCount = 0, dupCount = 0, skipCount = 0;
+        const list = [];
+        raw.forEach(item=>{
+          if(!item || !item.word || !item.meaning){ skipCount++; return; }
+          const key = String(item.word).toLowerCase() + '|' + String(item.meaning).trim();
+          const isDup = existingSet.has(key);
+          if(isDup) dupCount++; else newCount++;
+          list.push({
+            id: item.id || App.utils.uid(),
+            word: item.word, meaning: item.meaning,
+            example: item.example || '', exampleZh: item.exampleZh || '',
+            phonetic: item.phonetic || '', pos: item.pos || '',
+            tag: item.tag || '', scene: item.scene || '', domain: item.domain || '',
+            related: item.related || '',
+            status: item.status || 1,
+            date: item.date || new Date().toISOString().slice(0,10),
+            box: typeof item.box === 'number' ? item.box : 0,
+            nextReview: item.nextReview || Date.now(),
+            createdAt: item.createdAt || Date.now(),
+            _isDup: isDup
+          });
+        });
+
+        App.backup.pendingImport = { list, newCount, dupCount, skipCount };
+        App.backup.renderConfirm();
+      };
+      reader.readAsText(file, 'UTF-8');
+    },
+
+    renderConfirm(){
+      const p = App.backup.pendingImport;
+      App.dom.backupBody.innerHTML = `
+        <button class="sheet-back" id="backupBackBtn">${App.utils.icons.chevronLeft}<span>返回</span></button>
+        <div class="sheet-title">确认导入</div>
+        <div class="backup-stats">
+          <div><strong>${p.newCount}</strong> 条新单词</div>
+          <div><strong>${p.dupCount}</strong> 条与现有重复</div>
+          ${p.skipCount ? `<div><strong>${p.skipCount}</strong> 条跳过（缺单词或释义）</div>` : ''}
+        </div>
+        <div class="sheet-actions" style="flex-direction:column;">
+          <button class="btn btn-primary" id="mergeBtn">合并导入（跳过重复）</button>
+          <button class="btn" id="overwriteBtn" style="background:var(--danger-soft);color:var(--danger);">覆盖导入（替换全部现有数据）</button>
+        </div>`;
+      document.getElementById('mergeBtn').onclick = ()=>App.backup.applyImport('merge');
+      document.getElementById('overwriteBtn').onclick = ()=>App.backup.applyImport('overwrite');
+      document.getElementById('backupBackBtn').onclick = ()=>{
+        App.backup.pendingImport = null;
+        App.dom.importFileInput.value = '';
+        App.backup.renderMenu();
+      };
+    },
+
+    applyImport(mode){
+      const p = App.backup.pendingImport;
+      if(!p) return;
+      if(mode === 'overwrite'){
+        App.state.words = p.list.map(w=>{ const c={...w}; delete c._isDup; return c; });
+      } else {
+        const toAdd = p.list.filter(w=>!w._isDup).map(w=>{ const c={...w}; delete c._isDup; return c; });
+        App.state.words = App.state.words.concat(toAdd);
+      }
+      App.storage.save();
+      App.utils.toast(mode === 'overwrite' ? '已覆盖导入' : `已合并导入 ${p.newCount} 条`);
+      App.backup.close();
+      App.render.main();
+    }
+  },
+
+  // 云同步：GitHub Gist。跟 Words.html 用的是同一个 GitHub Token，
+  // 但 Gist 是 Grain 专属的新建 Gist，跟 Words.html 各用各的文件，
+  // 避免共用一个 Gist 时，对方一推送就让这边误判"云端冲突"。
+  gist: {
+    config: {
+      FILENAME: 'grain-words.json',
+      TOKEN_KEY: 'grain_gist_token',
+      GIST_ID_KEY: 'grain_gist_id',
+      KNOWN_VERSION_KEY: 'grain_gist_known_version',
+      PUSH_DEBOUNCE_MS: 8000,   // 改动之后等这么久没有新改动，才真正推送，避免连续编辑时狂发请求
+      PUSH_MIN_INTERVAL_MS: 10000
+    },
+    status: '',
+    _busy: false,
+    _lastPush: 0,
+    _pushTimer: null,
+
+    isConfigured(){
+      return !!(localStorage.getItem(App.gist.config.TOKEN_KEY) && localStorage.getItem(App.gist.config.GIST_ID_KEY));
+    },
+
+    setStatus(msg){
+      App.gist.status = msg;
+      const el = document.getElementById('gistStatus');
+      if(el) el.textContent = msg;
+    },
+
+    openSettings(){
+      const cfg = App.gist.config;
+      const token = localStorage.getItem(cfg.TOKEN_KEY) || '';
+      const gistId = localStorage.getItem(cfg.GIST_ID_KEY) || '';
+      App.dom.backupBody.innerHTML = `
+        <button class="sheet-back" id="gistBackBtn">${App.utils.icons.chevronLeft}<span>返回</span></button>
+        <div class="sheet-title">云同步</div>
+        <div class="field"><label>GitHub Token</label><input id="gistTokenInput" type="password" value="${App.utils.escapeHtml(token)}" placeholder="ghp_xxxxxxxx" autocomplete="off"></div>
+        <div class="field"><label>Gist ID</label><input id="gistIdInput" value="${App.utils.escapeHtml(gistId)}" placeholder="新建一个空 Gist，把它的 ID 填这里" autocomplete="off"></div>
+        <div style="font-size:12px;color:var(--ink-faint);margin:-6px 0 14px;">状态：<span id="gistStatus">${App.utils.escapeHtml(App.gist.status || (App.gist.isConfigured() ? '已配置' : '未配置'))}</span></div>
+        <div class="sheet-actions" style="flex-direction:column;">
+          <button class="btn btn-primary" id="gistSaveBtn">保存配置</button>
+          <div class="sheet-actions" style="margin-top:0;">
+            <button class="btn" id="gistPushBtn" style="background:var(--surface-2);color:var(--ink);">立即上传</button>
+            <button class="btn" id="gistPullBtn" style="background:var(--surface-2);color:var(--ink);">立即下载</button>
+          </div>
+        </div>`;
+      document.getElementById('gistSaveBtn').onclick = App.gist.saveConfig;
+      document.getElementById('gistPushBtn').onclick = ()=>App.gist.push(true);
+      document.getElementById('gistPullBtn').onclick = ()=>App.gist.pull(true);
+      document.getElementById('gistBackBtn').onclick = ()=>App.backup.renderMenu();
+    },
+
+    saveConfig(){
+      const cfg = App.gist.config;
+      const token = document.getElementById('gistTokenInput').value.trim();
+      const gistId = document.getElementById('gistIdInput').value.trim();
+      if(!token || !gistId){
+        App.utils.toast('Token 和 Gist ID 都要填');
+        return;
+      }
+      localStorage.setItem(cfg.TOKEN_KEY, token);
+      localStorage.setItem(cfg.GIST_ID_KEY, gistId);
+      App.utils.toast('已保存');
+      App.gist.setStatus('已配置');
+    },
+
+    buildContent(){
+      return JSON.stringify(App.state.words, null, 2);
+    },
+
+    // 改动数据后调用：防抖等待，安静地（非手动）推一次
+    scheduleAutoPush(){
+      if(!App.gist.isConfigured()) return;
+      clearTimeout(App.gist._pushTimer);
+      App.gist._pushTimer = setTimeout(()=>App.gist.push(false), App.gist.config.PUSH_DEBOUNCE_MS);
+    },
+
+    async push(manual){
+      const cfg = App.gist.config;
+      const token = localStorage.getItem(cfg.TOKEN_KEY);
+      const gistId = localStorage.getItem(cfg.GIST_ID_KEY);
+      if(!token || !gistId){ if(manual) App.utils.toast('先配置 Token 和 Gist ID'); return; }
+      if(App.gist._busy){ if(manual) App.utils.toast('同步进行中，稍等'); return; }
+      if(!manual && (Date.now() - App.gist._lastPush) < cfg.PUSH_MIN_INTERVAL_MS) return;
+
+      App.gist._busy = true;
+      if(manual) App.gist.setStatus('检查云端状态…');
+      try{
+        // 推送前先确认云端没被别的设备改过，避免静默覆盖对方的修改
+        const checkRes = await fetch('https://api.github.com/gists/' + gistId, {
+          headers: { Authorization: 'token ' + token }
+        });
+        if(!checkRes.ok) throw new Error('HTTP ' + checkRes.status);
+        const remote = await checkRes.json();
+        const known = localStorage.getItem(cfg.KNOWN_VERSION_KEY);
+        if(known && remote.updated_at && known !== remote.updated_at){
+          App.gist._busy = false;
+          if(manual) App.gist.setStatus('检测到云端有更新，请先处理冲突');
+          App.gist.showConflictBanner();
+          return;
+        }
+        await App.gist._doPush(token, gistId, manual);
+      }catch(e){
+        if(manual) App.gist.setStatus('检查失败：' + e.message);
+      }finally{
+        App.gist._busy = false;
+      }
+    },
+
+    async _doPush(token, gistId, manual){
+      const cfg = App.gist.config;
+      try{
+        const res = await fetch('https://api.github.com/gists/' + gistId, {
+          method: 'PATCH',
+          headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ files: { [cfg.FILENAME]: { content: App.gist.buildContent() } } })
+        });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        App.gist._lastPush = Date.now();
+        if(data.updated_at) localStorage.setItem(cfg.KNOWN_VERSION_KEY, data.updated_at);
+        if(manual) App.gist.setStatus('上传成功 ✓ ' + new Date().toLocaleTimeString());
+      }catch(e){
+        if(manual) App.gist.setStatus('上传失败：' + e.message);
+      }
+    },
+
+    async pull(manual){
+      const cfg = App.gist.config;
+      const token = localStorage.getItem(cfg.TOKEN_KEY);
+      const gistId = localStorage.getItem(cfg.GIST_ID_KEY);
+      if(!token || !gistId){ if(manual) App.utils.toast('先配置 Token 和 Gist ID'); return; }
+      if(manual) App.gist.setStatus('下载中…');
+      try{
+        const res = await fetch('https://api.github.com/gists/' + gistId, {
+          headers: { Authorization: 'token ' + token }
+        });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const file = data.files && data.files[cfg.FILENAME];
+        if(!file){
+          if(manual) App.gist.setStatus('Gist 里还没有 Grain 的数据文件，先上传一次');
+          return;
+        }
+        const content = JSON.parse(file.content);
+        if(Array.isArray(content)){
+          App.state.words = content;
+          App.storage.save({ skipAutoPush: true }); // 拉下来的数据不用再推回去
+        }
+        if(data.updated_at) localStorage.setItem(cfg.KNOWN_VERSION_KEY, data.updated_at);
+        if(manual) App.gist.setStatus('下载成功 ✓ ' + new Date().toLocaleTimeString());
+        App.render.main();
+      }catch(e){
+        if(manual) App.gist.setStatus('下载失败：' + e.message);
+      }
+    },
+
+    // 冲突提示条：跟"添加/备份"那两个 sheet 是独立的浮层，不管当前在哪个页面都能弹出来
+    showConflictBanner(){
+      if(document.getElementById('gistConflictBanner')) return;
+      const banner = document.createElement('div');
+      banner.id = 'gistConflictBanner';
+      banner.className = 'conflict-banner';
+      banner.innerHTML = `
+        <div style="margin-bottom:10px;">⚠️ 检测到云端有更新（可能来自其他设备），是否用本地数据覆盖云端？</div>
+        <div style="display:flex;gap:8px;">
+          <button id="cfOverwrite" style="flex:1;padding:8px 4px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">覆盖云端</button>
+          <button id="cfPull" style="flex:1;padding:8px 4px;background:var(--surface-2);color:var(--ink);border:none;border-radius:6px;font-size:12px;cursor:pointer;">改用云端数据</button>
+          <button id="cfDismiss" style="flex:1;padding:8px 4px;background:var(--surface-2);color:var(--ink-soft);border:none;border-radius:6px;font-size:12px;cursor:pointer;">稍后再说</button>
+        </div>`;
+      document.body.appendChild(banner);
+      document.getElementById('cfOverwrite').onclick = ()=>App.gist.resolveConflict('overwrite');
+      document.getElementById('cfPull').onclick = ()=>App.gist.resolveConflict('pull');
+      document.getElementById('cfDismiss').onclick = ()=>App.gist.resolveConflict('dismiss');
+    },
+
+    resolveConflict(action){
+      const banner = document.getElementById('gistConflictBanner');
+      if(banner) banner.remove();
+      if(action === 'overwrite'){
+        const cfg = App.gist.config;
+        App.gist._busy = true;
+        App.gist._doPush(localStorage.getItem(cfg.TOKEN_KEY), localStorage.getItem(cfg.GIST_ID_KEY), true)
+          .finally(()=>{ App.gist._busy = false; });
+      } else if(action === 'pull'){
+        App.gist.pull(true);
+      }
+      // dismiss：本地改动先留着，下次自动推送时会重新检测
+    }
+  },
+
+  sheet: {
+    openAdd(){
+      const S = App.state;
+      S.editingId = null;
+      App.dom.sheetTitle.textContent = '添加单词';
+      App.dom.deleteBtn.style.display = 'none';
+      ['fWord','fMeaning','fExample','fPhonetic','fPos','fExampleZh','fTag','fScene','fDomain','fRelated']
+        .forEach(id=>document.getElementById(id).value = '');
+      document.getElementById('fStatus').value = '1';
+      document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+      App.dom.moreFields.classList.remove('open');
+      App.dom.moreToggle.classList.remove('open');
+      App.sheet.show();
+      setTimeout(()=>document.getElementById('fWord').focus(), 300);
+    },
+
+    openEdit(id){
+      const S = App.state;
+      const w = S.words.find(x=>x.id === id);
+      if(!w) return;
+      S.editingId = id;
+      App.dom.sheetTitle.textContent = '编辑单词';
+      App.dom.deleteBtn.style.display = 'block';
+
+      document.getElementById('fWord').value = w.word || '';
+      document.getElementById('fMeaning').value = w.meaning || '';
+      document.getElementById('fExample').value = w.example || '';
+      document.getElementById('fPhonetic').value = w.phonetic || '';
+      document.getElementById('fPos').value = w.pos || '';
+      document.getElementById('fExampleZh').value = w.exampleZh || '';
+      document.getElementById('fTag').value = w.tag || '';
+      document.getElementById('fScene').value = w.scene || '';
+      document.getElementById('fDomain').value = w.domain || '';
+      document.getElementById('fRelated').value = w.related || '';
+      document.getElementById('fStatus').value = String(w.status || 1);
+      document.getElementById('fDate').value = w.date || new Date().toISOString().slice(0,10);
+
+      const hasMore = !!(w.phonetic || w.pos || w.exampleZh || w.tag || w.scene || w.domain || w.related);
+      App.dom.moreFields.classList.toggle('open', hasMore);
+      App.dom.moreToggle.classList.toggle('open', hasMore);
+
+      App.sheet.show();
+    },
+
+    show(){
+      App.dom.sheetOverlay.classList.add('show');
+      App.dom.sheet.classList.add('show');
+    },
+    close(){
+      App.dom.sheetOverlay.classList.remove('show');
+      App.dom.sheet.classList.remove('show');
+    },
+
+    save(){
+      const S = App.state;
+      const word = document.getElementById('fWord').value.trim();
+      const meaning = document.getElementById('fMeaning').value.trim();
+      if(!word || !meaning){
+        App.utils.toast('单词和释义都要填哦');
+        return;
+      }
+
+      const existing = S.editingId ? S.words.find(x=>x.id === S.editingId) : null;
+
+      const data = {
+        id: S.editingId || App.utils.uid(),
+        word, meaning,
+        example: document.getElementById('fExample').value.trim(),
+        phonetic: document.getElementById('fPhonetic').value.trim(),
+        pos: document.getElementById('fPos').value.trim(),
+        exampleZh: document.getElementById('fExampleZh').value.trim(),
+        tag: document.getElementById('fTag').value.trim(),
+        scene: document.getElementById('fScene').value.trim(),
+        domain: document.getElementById('fDomain').value.trim(),
+        related: document.getElementById('fRelated').value.trim(),
+        status: parseInt(document.getElementById('fStatus').value, 10),
+        date: document.getElementById('fDate').value,
+        // 间隔重复调度字段：编辑时保留原有进度，新词从今天开始
+        box: existing ? existing.box : 0,
+        nextReview: existing ? existing.nextReview : Date.now(),
+        createdAt: existing ? existing.createdAt : Date.now()
+      };
+
+      if(existing){
+        Object.assign(existing, data);
+        App.utils.toast('已保存');
+      } else {
+        S.words.push(data);
+        App.utils.toast('已添加');
+      }
+      App.storage.save();
+      App.sheet.close();
+      App.render.main();
+    },
+
+    delete(){
+      const S = App.state;
+      if(!S.editingId) return;
+      if(!confirm('确定删除这个单词吗？')) return;
+      S.words = S.words.filter(w=>w.id !== S.editingId);
+      App.storage.save();
+      App.sheet.close();
+      App.render.main();
+    }
+  },
+
+  init(){
+    this.dom = {
+      main: document.getElementById('main'),
+      headerCount: document.getElementById('headerCount'),
+      toast: document.getElementById('toast'),
+      sheet: document.getElementById('sheet'),
+      sheetOverlay: document.getElementById('sheetOverlay'),
+      sheetTitle: document.getElementById('sheetTitle'),
+      moreToggle: document.getElementById('moreToggle'),
+      moreFields: document.getElementById('moreFields'),
+      deleteBtn: document.getElementById('deleteBtn'),
+      saveBtn: document.getElementById('saveBtn'),
+      fabAdd: document.getElementById('fabAdd'),
+      settingsBtn: document.getElementById('settingsBtn'),
+      backupSheet: document.getElementById('backupSheet'),
+      backupOverlay: document.getElementById('backupOverlay'),
+      backupBody: document.getElementById('backupBody'),
+      importFileInput: document.getElementById('importFileInput')
+    };
+
+    this.dom.fabAdd.onclick = ()=>this.sheet.openAdd();
+    this.dom.sheetOverlay.onclick = ()=>this.sheet.close();
+    this.dom.saveBtn.onclick = ()=>this.sheet.save();
+    this.dom.deleteBtn.onclick = ()=>this.sheet.delete();
+    this.dom.moreToggle.onclick = ()=>{
+      this.dom.moreFields.classList.toggle('open');
+      this.dom.moreToggle.classList.toggle('open');
+    };
+
+    this.dom.settingsBtn.onclick = ()=>this.backup.open();
+    this.dom.backupOverlay.onclick = ()=>this.backup.close();
+    this.dom.importFileInput.onchange = (e)=>this.backup.handleFile(e);
+
+    document.querySelectorAll('.nav-btn').forEach(btn=>{
+      btn.onclick = ()=>{
+        this.state.currentTab = btn.dataset.tab;
+        this.render.syncNav();
+        if(btn.dataset.tab === 'review'){
+          this.review.start(this.state.reviewDueOnly);
+        } else {
+          this.render.main();
+        }
+      };
+    });
+
+    // 恢复上次选的"今日复习/全部单词"偏好
+    this.state.reviewDueOnly = localStorage.getItem(this.config.REVIEW_MODE_KEY) !== '0';
+
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', ()=>{
+        navigator.serviceWorker.register('./sw.js').catch(()=>{});
+      });
+    }
+
+    this.storage.load();
+    this.render.main();
+
+    // 启动时如果配置了云同步，静默拉一次最新数据
+    if(this.gist.isConfigured()) this.gist.pull(false);
+  }
+};
+
+App.init();
+window.App = App; // 方便控制台调试
+</script>
+</body>
+</html>
