@@ -109,6 +109,9 @@
     line-height:1.9;
     margin:14px 0;
   }
+  .gist-status-neutral{ color:var(--ink-faint); }
+  .gist-status-ok{ color:var(--success); font-weight:600; }
+  .gist-status-error{ color:var(--danger); font-weight:600; }
   .conflict-banner{
     position:fixed;
     left:50%; bottom:24px;
@@ -1100,10 +1103,14 @@ const App = {
       return !!(localStorage.getItem(App.gist.config.TOKEN_KEY) && localStorage.getItem(App.gist.config.GIST_ID_KEY));
     },
 
-    setStatus(msg){
+    setStatus(msg, type){
       App.gist.status = msg;
+      App.gist.statusType = type || 'neutral';
       const el = document.getElementById('gistStatus');
-      if(el) el.textContent = msg;
+      if(el){
+        el.textContent = msg;
+        el.className = 'gist-status-' + App.gist.statusType;
+      }
     },
 
     openSettings(){
@@ -1115,7 +1122,7 @@ const App = {
         <div class="sheet-title">云同步</div>
         <div class="field"><label>GitHub Token</label><input id="gistTokenInput" type="password" value="${App.utils.escapeHtml(token)}" placeholder="ghp_xxxxxxxx" autocomplete="off"></div>
         <div class="field"><label>Gist ID <span style="font-weight:400;color:var(--ink-faint);">（留空会自动新建一个）</span></label><input id="gistIdInput" value="${App.utils.escapeHtml(gistId)}" placeholder="留空 = 自动创建新 Gist" autocomplete="off"></div>
-        <div style="font-size:12px;color:var(--ink-faint);margin:-6px 0 14px;">状态：<span id="gistStatus">${App.utils.escapeHtml(App.gist.status || (App.gist.isConfigured() ? '已配置' : '未配置'))}</span></div>
+        <div style="font-size:12px;color:var(--ink-faint);margin:-6px 0 14px;">状态：<span id="gistStatus" class="gist-status-${App.gist.statusType || 'neutral'}">${App.utils.escapeHtml(App.gist.status || (App.gist.isConfigured() ? '已配置' : '未配置'))}</span></div>
         <div class="sheet-actions" style="flex-direction:column;">
           <button class="btn btn-primary" id="gistSaveBtn">保存配置</button>
           <div class="sheet-actions" style="margin-top:0;">
@@ -1141,7 +1148,7 @@ const App = {
       if(gistId){
         localStorage.setItem(cfg.GIST_ID_KEY, gistId);
         App.utils.toast('已保存');
-        App.gist.setStatus('已配置');
+        App.gist.setStatus('已配置', 'ok');
       } else {
         // Gist ID 留空：自动创建一个新的私有 Gist，创建好把 ID 自动填回去
         App.gist.createGist(token);
@@ -1150,7 +1157,7 @@ const App = {
 
     async createGist(token){
       const cfg = App.gist.config;
-      App.gist.setStatus('正在创建 Gist…');
+      App.gist.setStatus('正在创建 Gist…', 'neutral');
       try{
         const res = await fetch('https://api.github.com/gists', {
           method: 'POST',
@@ -1167,10 +1174,10 @@ const App = {
         if(data.updated_at) localStorage.setItem(cfg.KNOWN_VERSION_KEY, data.updated_at);
         const idInput = document.getElementById('gistIdInput');
         if(idInput) idInput.value = data.id;
-        App.gist.setStatus('Gist 创建成功，ID 已自动填入 ✓');
+        App.gist.setStatus('Gist 创建成功，ID 已自动填入 ✓', 'ok');
         App.utils.toast('已创建并保存');
       }catch(e){
-        App.gist.setStatus('创建失败：' + e.message);
+        App.gist.setStatus('创建失败：' + e.message, 'error');
       }
     },
 
@@ -1194,7 +1201,7 @@ const App = {
       if(!manual && (Date.now() - App.gist._lastPush) < cfg.PUSH_MIN_INTERVAL_MS) return;
 
       App.gist._busy = true;
-      if(manual) App.gist.setStatus('检查云端状态…');
+      if(manual) App.gist.setStatus('检查云端状态…', 'neutral');
       try{
         // 推送前先确认云端没被别的设备改过，避免静默覆盖对方的修改
         const checkRes = await fetch('https://api.github.com/gists/' + gistId, {
@@ -1205,13 +1212,13 @@ const App = {
         const known = localStorage.getItem(cfg.KNOWN_VERSION_KEY);
         if(known && remote.updated_at && known !== remote.updated_at){
           App.gist._busy = false;
-          if(manual) App.gist.setStatus('检测到云端有更新，请先处理冲突');
+          if(manual) App.gist.setStatus('检测到云端有更新，请先处理冲突', 'error');
           App.gist.showConflictBanner();
           return;
         }
         await App.gist._doPush(token, gistId, manual);
       }catch(e){
-        if(manual) App.gist.setStatus('检查失败：' + e.message);
+        if(manual) App.gist.setStatus('检查失败：' + e.message, 'error');
       }finally{
         App.gist._busy = false;
       }
@@ -1229,9 +1236,9 @@ const App = {
         const data = await res.json();
         App.gist._lastPush = Date.now();
         if(data.updated_at) localStorage.setItem(cfg.KNOWN_VERSION_KEY, data.updated_at);
-        if(manual) App.gist.setStatus('上传成功 ✓ ' + new Date().toLocaleTimeString());
+        if(manual) App.gist.setStatus('上传成功 ✓ ' + new Date().toLocaleTimeString(), 'ok');
       }catch(e){
-        if(manual) App.gist.setStatus('上传失败：' + e.message);
+        if(manual) App.gist.setStatus('上传失败：' + e.message, 'error');
       }
     },
 
@@ -1240,7 +1247,7 @@ const App = {
       const token = localStorage.getItem(cfg.TOKEN_KEY);
       const gistId = localStorage.getItem(cfg.GIST_ID_KEY);
       if(!token || !gistId){ if(manual) App.utils.toast('先配置 Token 和 Gist ID'); return; }
-      if(manual) App.gist.setStatus('下载中…');
+      if(manual) App.gist.setStatus('下载中…', 'neutral');
       try{
         const res = await fetch('https://api.github.com/gists/' + gistId, {
           headers: { Authorization: 'token ' + token }
@@ -1249,7 +1256,7 @@ const App = {
         const data = await res.json();
         const file = data.files && data.files[cfg.FILENAME];
         if(!file){
-          if(manual) App.gist.setStatus('Gist 里还没有 Grain 的数据文件，先上传一次');
+          if(manual) App.gist.setStatus('Gist 里还没有 Grain 的数据文件，先上传一次', 'neutral');
           return;
         }
         const content = JSON.parse(file.content);
@@ -1258,10 +1265,10 @@ const App = {
           App.storage.save({ skipAutoPush: true }); // 拉下来的数据不用再推回去
         }
         if(data.updated_at) localStorage.setItem(cfg.KNOWN_VERSION_KEY, data.updated_at);
-        if(manual) App.gist.setStatus('下载成功 ✓ ' + new Date().toLocaleTimeString());
+        if(manual) App.gist.setStatus('下载成功 ✓ ' + new Date().toLocaleTimeString(), 'ok');
         App.render.main();
       }catch(e){
-        if(manual) App.gist.setStatus('下载失败：' + e.message);
+        if(manual) App.gist.setStatus('下载失败：' + e.message, 'error');
       }
     },
 
