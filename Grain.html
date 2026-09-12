@@ -192,6 +192,9 @@
     color:var(--ink-faint);
     letter-spacing:2px;
   }
+  .word-card .meaning.revealed{
+    cursor:pointer;
+  }
   .word-card .meaning.masked .reveal-hint{
     font-size:11px;
     color:var(--accent);
@@ -696,9 +699,15 @@ const App = {
         const tags = [w.pos, w.tag, w.scene, w.domain].filter(Boolean);
         const mastered = w.status === 2;
         const showMasked = mastered && !App.list.revealedIds.has(w.id);
-        const meaningHtml = showMasked
-          ? `<div class="meaning masked" data-reveal-id="${w.id}">•••• <span class="reveal-hint">点击查看</span></div>`
-          : `<div class="meaning">${esc(w.meaning)}</div>`;
+        let meaningHtml;
+        if(showMasked){
+          meaningHtml = `<div class="meaning masked" data-reveal-id="${w.id}">•••• <span class="reveal-hint">点击查看</span></div>`;
+        } else if(mastered){
+          // 已掌握但当前是"临时展开"状态：点一下应该能再盖回去，不是看过一次就永远亮着
+          meaningHtml = `<div class="meaning revealed" data-reveal-id="${w.id}">${esc(w.meaning)}</div>`;
+        } else {
+          meaningHtml = `<div class="meaning">${esc(w.meaning)}</div>`;
+        }
         return `<div class="word-card" data-id="${w.id}">
           <div class="row1">
             <span class="word">${esc(w.word)}</span>
@@ -721,10 +730,13 @@ const App = {
         App.list.bindSwipe(card);
       });
 
-      $main.querySelectorAll('.meaning.masked').forEach(el=>{
+      // masked（点了要显示）和 revealed（点了要盖回去）共用同一个开关逻辑
+      $main.querySelectorAll('.meaning.masked, .meaning.revealed').forEach(el=>{
         el.onclick = (e)=>{
           e.stopPropagation(); // 别让这次点击也顺带打开编辑表单
-          App.list.revealedIds.add(el.dataset.revealId);
+          const id = el.dataset.revealId;
+          if(App.list.revealedIds.has(id)) App.list.revealedIds.delete(id);
+          else App.list.revealedIds.add(id);
           App.render.list();
         };
       });
