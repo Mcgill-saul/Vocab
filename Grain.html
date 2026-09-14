@@ -878,7 +878,13 @@ const App = {
     save(opts){
       try{
         localStorage.setItem(App.config.STORAGE_KEY, JSON.stringify(App.state.words));
-        if(!(opts && opts.skipAutoPush)) App.gist.scheduleAutoPush();
+        if(!(opts && opts.skipAutoPush)){
+          // 贴"纸条"：本地这份还没确认推上云端。这一步只是写 localStorage，不联网、
+          // 不算请求，想跟着存档多频繁贴都行，跟下面 8 秒防抖的节奏没有任何冲突——
+          // 防抖管的是"真正发请求给 GitHub"这一步，纸条只是留个记号给下次打开 App 用
+          localStorage.setItem(App.gist.config.DIRTY_KEY, '1');
+          App.gist.scheduleAutoPush();
+        }
       }catch(e){
         App.utils.toast('保存失败，存储空间可能已满');
       }
@@ -1643,6 +1649,7 @@ const App = {
       TOKEN_KEY: 'grain_gist_token',
       GIST_ID_KEY: 'grain_gist_id',
       KNOWN_VERSION_KEY: 'grain_gist_known_version',
+      DIRTY_KEY: 'grain_gist_dirty', // "本地有没推上去的改动"标记，存 localStorage（不是内存变量）才扛得住刷新/关页面
       PUSH_DEBOUNCE_MS: 8000,   // 改动之后等这么久没有新改动，才真正推送，避免连续编辑时狂发请求
       PUSH_MIN_INTERVAL_MS: 10000
     },
@@ -1744,6 +1751,20 @@ const App = {
       App.gist._pushTimer = setTimeout(()=>App.gist.push(false), App.gist.config.PUSH_DEBOUNCE_MS);
     },
 
+    // App 启动时调这个，不要再直接调 pull——先看"纸条"还在不在：
+    // 还在，说明本地可能有次改动上次没来得及推上去（比如改完没等 8 秒就把页面关了/刷新了），
+    // 这时候直接 pull 会用云端的旧数据把这次改动悄悄冲掉，所以要反过来先推（push 自带冲突检测，
+    // 云端被别的设备动过也不会硬覆盖，会走原来那套冲突提示）；纸条不在，说明上次退出前已经
+    // 确认推送成功、云端就是最新的，照旧直接 pull 就行
+    syncOnLoad(){
+      if(!App.gist.isConfigured()) return;
+      if(localStorage.getItem(App.gist.config.DIRTY_KEY)){
+        App.gist.push(false);
+      } else {
+        App.gist.pull(false);
+      }
+    },
+
     async push(manual){
       const cfg = App.gist.config;
       const token = localStorage.getItem(cfg.TOKEN_KEY);
@@ -1788,6 +1809,7 @@ const App = {
         const data = await res.json();
         App.gist._lastPush = Date.now();
         if(data.updated_at) localStorage.setItem(cfg.KNOWN_VERSION_KEY, data.updated_at);
+        localStorage.removeItem(cfg.DIRTY_KEY); // 推送确认成功了，纸条才能撕——失败/冲突的情况都不会走到这行，纸条会一直留着
         if(manual) App.gist.setStatus('上传成功 ✓ ' + new Date().toLocaleTimeString(), 'ok');
       }catch(e){
         if(manual) App.gist.setStatus('上传失败：' + e.message, 'error');
@@ -1817,6 +1839,7 @@ const App = {
           App.storage.save({ skipAutoPush: true }); // 拉下来的数据不用再推回去
         }
         if(data.updated_at) localStorage.setItem(cfg.KNOWN_VERSION_KEY, data.updated_at);
+        localStorage.removeItem(cfg.DIRTY_KEY); // 拉下来之后本地就等于云端了，不管之前纸条贴没贴过都不算数了
         if(manual) App.gist.setStatus('下载成功 ✓ ' + new Date().toLocaleTimeString(), 'ok');
         App.render.main();
       }catch(e){
@@ -2151,8 +2174,8 @@ const App = {
     this.storage.load();
     this.render.main();
 
-    // 启动时如果配置了云同步，静默拉一次最新数据
-    if(this.gist.isConfigured()) this.gist.pull(false);
+    // 启动时如果配置了云同步，走 syncOnLoad——它会自己判断该先推还是直接拉
+    this.gist.syncOnLoad();
   }
 };
 
