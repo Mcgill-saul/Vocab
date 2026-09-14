@@ -267,6 +267,9 @@
      跟搜索框一样只在词库页显示，切到复习页就藏起来 */
   #filterToggleBtn.active{ color:var(--accent); border-color:var(--accent); }
   #filterToggleBtn.hidden{ display:none; }
+  /* 释义总开关：跟筛选开关同款——开着就换强调色，且只在词库页显示 */
+  #hideMeaningsBtn.active{ color:var(--accent); border-color:var(--accent); }
+  #hideMeaningsBtn.hidden{ display:none; }
 
   .backup-row{
     display:flex;
@@ -718,6 +721,7 @@
       <input id="listSearchInput" placeholder="Search" autocomplete="off">
     </div>
     <div class="header-right">
+      <button class="icon-btn" id="hideMeaningsBtn" aria-label="隐藏释义"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
       <button class="icon-btn" id="filterToggleBtn" aria-label="筛选"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
       <button class="icon-btn" id="settingsBtn" aria-label="备份设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
@@ -927,11 +931,13 @@ const App = {
       });
     },
 
-    // 搜索框常驻在 header 里，只在词库页显示；切到复习页就藏起来。
+    // 搜索框、释义总开关都只在词库页显示，切到复习页就藏起来。
     // 跟 syncNav 一样，得在"直接调 review.start() 跳过 render.main()"的路径上也手动调一次，
-    // 不然从词库切到复习，搜索框不会跟着消失（这个坑我们在 nav 高亮上已经踩过一次了）。
+    // 不然从词库切到复习，它们不会跟着消失（这个坑我们在 nav 高亮上已经踩过一次了）。
     syncHeaderSearch(){
       App.dom.headerSearch.classList.toggle('hidden', App.state.currentTab !== 'list');
+      App.dom.hideMeaningsBtn.classList.toggle('hidden', App.state.currentTab !== 'list');
+      App.dom.hideMeaningsBtn.classList.toggle('active', App.list.hideAllMeanings);
     },
 
     // 场景筛选：开关图标（三横线）跟搜索框一样，只在词库页显示，切到复习页就藏起来；
@@ -1021,12 +1027,16 @@ const App = {
     _wordCard(w){
       const esc = App.utils.escapeHtml;
       const mastered = w.status === 2;
-      const showMasked = mastered && !App.list.revealedIds.has(w.id);
+      // maskable：这个词现在是不是处于"应该被盖住"的规则下（已掌握 或者 总开关开着）；
+      // 释义总开关开着的时候，学习中的词也跟已掌握的词共用同一套"默认盖住、点开看一眼、
+      // 再点盖回去"的逻辑——已经因为 mastered 而盖住的词，开关再开对它没有额外影响
+      const maskable = mastered || App.list.hideAllMeanings;
+      const showMasked = maskable && !App.list.revealedIds.has(w.id);
       let meaningHtml;
       if(showMasked){
         meaningHtml = `<span class="meaning-inline masked" data-reveal-id="${w.id}">••••</span>`;
-      } else if(mastered){
-        // 已掌握但当前是"临时展开"状态：点一下应该能再盖回去，不是看过一次就永远亮着
+      } else if(maskable){
+        // 处于遮盖规则下、但当前是"临时展开"状态：点一下应该能再盖回去，不是看过一次就永远亮着
         meaningHtml = `<span class="meaning-inline revealed" data-reveal-id="${w.id}">${esc(w.meaning)}</span>`;
       } else {
         meaningHtml = `<span class="meaning-inline">${esc(w.meaning)}</span>`;
@@ -1150,9 +1160,19 @@ const App = {
   //   1. 左滑卡片：在"学习中"和"已掌握"之间切换（再滑一次滑回去）
   //   2. 已掌握的词，释义默认用圆点遮住，点一下才显示——把翻列表变成一次被动回忆测验
   list: {
-    revealedIds: new Set(), // 本次打开 App 期间，手动点开看过释义的已掌握单词，不存库，纯临时状态
+    revealedIds: new Set(), // 本次打开 App 期间，手动点开看过释义的单词（已掌握的、或总开关开着时的学习中单词都算），不存库，纯临时状态
+    hideAllMeanings: false, // 释义总开关：开着的时候，学习中的词也跟已掌握的词一样默认盖住释义，逐个点开看
     _justSwiped: false,     // 滑动刚结束的短暂窗口内，屏蔽紧跟着触发的点击（避免滑完顺带被当成点击打开编辑）
     _swipe: { active:false, id:null, startX:0, startY:0, curX:0, swiping:false, moved:false },
+
+    // 切总开关：不管开还是关，都清空"点开过"的记录——开关切换等于重新开始一轮自测，
+    // 之前点没点开过都不算数；已掌握的词本来就该盖着，清空后也会被重新盖住，不搞特殊
+    toggleHideAllMeanings(){
+      App.list.hideAllMeanings = !App.list.hideAllMeanings;
+      App.list.revealedIds.clear();
+      App.render.syncHeaderSearch(); // 按钮的强调色状态跟着一起刷新
+      App.render.list();
+    },
 
     bindSwipe(card){
       const THRESHOLD = 70;
@@ -1422,8 +1442,11 @@ const App = {
   review: {
     isDue(w){ return (w.nextReview || 0) <= Date.now(); },
 
+    // 已掌握的词直接跳出复习候选池——不管 Due Today 还是 All Words 模式都不会抽到它，
+    // 除非手动把它切回 Learning。这样"已掌握"才算真正有后果，不是一个纯装饰的标签
     buildQueue(dueOnly){
-      const pool = dueOnly ? App.state.words.filter(App.review.isDue) : App.state.words.slice();
+      const base = App.state.words.filter(w=>w.status !== 2);
+      const pool = dueOnly ? base.filter(App.review.isDue) : base;
       pool.sort((a,b)=>(a.nextReview||0) - (b.nextReview||0));
       // 简单洗牌，避免每次都按同一个顺序背
       for(let i = pool.length - 1; i > 0; i--){
@@ -2011,6 +2034,7 @@ const App = {
       main: document.getElementById('main'),
       headerSearch: document.getElementById('headerSearch'),
       searchInput: document.getElementById('listSearchInput'),
+      hideMeaningsBtn: document.getElementById('hideMeaningsBtn'),
       filterToggleBtn: document.getElementById('filterToggleBtn'),
       filterRow: document.getElementById('filterRow'),
       filterFieldScene: document.getElementById('filterFieldScene'),
@@ -2088,6 +2112,8 @@ const App = {
       if(!this.state.filterRowExpanded) this.filter.collapseActive();
       this.render.syncFilterRow();
     };
+    // 释义总开关：开/关都会清空"点开过"的记录，相当于重新开始一轮自测
+    this.dom.hideMeaningsBtn.onclick = ()=>this.list.toggleHideAllMeanings();
 
     // Part of Speech 历史值建议：原生 focus/blur 驱动开关，跟筛选行的输入框是同一套思路；
     // 卡片上挡了 mousedown，点建议项不会在 click 触发前先把输入框 blur 掉
