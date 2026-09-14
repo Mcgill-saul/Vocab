@@ -88,7 +88,7 @@
     font-size:var(--fs-sm);
     color:var(--ink-soft);
     flex-shrink:0;
-  }
+  } /* 单词数量的显示已经拿掉了（header-right 那个位置换成了筛选开关图标），这条样式现在没人用，先留着不删，万一以后想把计数挪到别处显示还能直接复用 */
   .header-right{
     display:flex;
     align-items:center;
@@ -121,6 +121,118 @@
     color:var(--ink);
   }
   .header-search input::placeholder{ color:var(--ink-faint); } /* 要求"颜色浅一点"，用最淡的那档灰 */
+
+  /* ── 场景筛选行：header 正下方，只在词库页显示（跟搜索框同一套显示规则）。
+     三个字段（Context / Domain / Tag）本身就是真正的输入框——点一下直接聚焦、
+     直接打字，不需要先点开什么别的东西再输入。平时（没聚焦）灰底胶囊、
+     左对齐显示占位符或当前选中值摘要，跟顶部搜索框长得一样。
+     一聚焦就展开变宽（.expanded），另外两个让出空间收窄（.shrunk），
+     已选的值这时候才以 chip 形式出现在输入框前面，输入框继续打字过滤建议。
+     右边固定一个清空按钮，跟设置按钮同款、上下对齐。 */
+  .filter-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 20px 10px;
+  }
+  .filter-row.hidden{ display:none; }
+  .filter-row .icon-btn{ flex-shrink:0; }
+
+  .filter-field{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    flex:1;
+    min-width:0;
+    background:var(--surface-2);
+    border-radius:999px;
+    padding:7px 12px;
+    overflow:hidden;
+  }
+  .filter-field.expanded{ flex:2.4; }
+  .filter-field.shrunk{ flex:0.5; }
+
+  .filter-chips{
+    display:none; /* 没聚焦时不显示 chip，避免窄列被挤爆；聚焦展开了才出现 */
+    align-items:center;
+    flex-wrap:wrap;
+    gap:4px;
+  }
+  .filter-field.expanded .filter-chips{ display:flex; }
+  .filter-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-size:var(--fs-sm);
+    font-weight:600;
+    padding:3px 6px 3px 9px;
+    border-radius:999px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .filter-chip .chip-remove{ display:flex; cursor:pointer; }
+  .filter-chip .chip-remove svg{ width:11px; height:11px; }
+
+  .filter-input{
+    flex:1;
+    min-width:0;
+    border:none;
+    outline:none;
+    background:transparent;
+    font-family:inherit;
+    font-size:var(--fs-sm);
+    color:var(--ink);
+    text-align:left; /* 跟搜索框的 Search 一样左对齐 */
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .filter-input::placeholder{ color:var(--ink-faint); } /* 没聚焦时占位符=字段名或已选值摘要，浅色 */
+
+  /* ── 建议卡片：贴着筛选行出现在下方，不做全屏变暗遮罩，
+     只需要一层透明遮罩接"点外面收起"，保持轻量。
+     跟 .fab / .nav-bar 一样的写法：默认 fixed，挂在 #app 下时改成 absolute，
+     这样才能按 #app 这个 480px 宽的容器定位，不会跑到真实视口的边缘去。 */
+  .filter-popover-overlay{
+    position:fixed; inset:0;
+    background:transparent;
+    z-index:16;
+    display:none;
+  }
+  .filter-popover-overlay.show{ display:block; }
+  #app > .filter-popover-overlay{ position:absolute; }
+  .filter-popover{
+    position:fixed;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);
+    padding:6px;
+    max-height:240px;
+    overflow-y:auto;
+    z-index:17;
+    display:none;
+  }
+  .filter-popover.show{ display:block; }
+  #app > .filter-popover{ position:absolute; }
+  .filter-option{
+    padding:10px 10px;
+    border-radius:var(--radius-sm);
+    font-size:var(--fs-sm);
+    color:var(--ink);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    cursor:pointer;
+  }
+  .filter-option:active{ background:var(--surface-2); }
+  .filter-popover .fo-empty{
+    padding:18px 8px;
+    text-align:center;
+    color:var(--ink-faint);
+    font-size:var(--fs-sm);
+  }
+
   .icon-btn{
     width:30px; height:30px;
     border-radius:50%;
@@ -132,6 +244,8 @@
   }
   .icon-btn svg{ width:15px; height:15px; }
   .icon-btn:active{ background:var(--surface-2); }
+  /* 筛选开关图标：收起状态下也要能看出"现在是不是筛着东西"，有筛选生效就换成强调色 */
+  #filterToggleBtn.active{ color:var(--accent); border-color:var(--accent); }
 
   .backup-row{
     display:flex;
@@ -423,7 +537,7 @@
     font-family:inherit; cursor:pointer;
     display:flex; align-items:center; gap:5px;
   }
-  .more-toggle .arrow{ font-size:var(--fs-xs); transition:transform .15s; }
+  .more-toggle .arrow{ font-size:var(--fs-lg); transition:transform .15s; }
   .more-toggle.open .arrow{ transform:rotate(90deg); }
   .more-fields{ display:none; flex-direction:column; }
   .more-fields.open{ display:flex; }
@@ -570,10 +684,27 @@
       <input id="listSearchInput" placeholder="Search" autocomplete="off">
     </div>
     <div class="header-right">
-      <span class="count" id="headerCount"></span>
+      <button class="icon-btn" id="filterToggleBtn" aria-label="筛选"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
       <button class="icon-btn" id="settingsBtn" aria-label="备份设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
   </header>
+
+  <div class="filter-row" id="filterRow">
+    <div class="filter-field" id="filterFieldScene" data-field="scene">
+      <div class="filter-chips" id="filterChipsScene"></div>
+      <input type="text" class="filter-input" id="filterInputScene" placeholder="Context" autocomplete="off">
+    </div>
+    <div class="filter-field" id="filterFieldDomain" data-field="domain">
+      <div class="filter-chips" id="filterChipsDomain"></div>
+      <input type="text" class="filter-input" id="filterInputDomain" placeholder="Domain" autocomplete="off">
+    </div>
+    <div class="filter-field" id="filterFieldTag" data-field="tag">
+      <div class="filter-chips" id="filterChipsTag"></div>
+      <input type="text" class="filter-input" id="filterInputTag" placeholder="Tag" autocomplete="off">
+    </div>
+    <button class="icon-btn" id="filterResetBtn" aria-label="清空筛选"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>
+  </div>
+
   <main id="main"></main>
 
   <nav class="nav-bar">
@@ -584,6 +715,9 @@
   <button class="fab" id="fabAdd">+</button>
 
   <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;">
+
+  <div class="filter-popover-overlay" id="filterPopoverOverlay"></div>
+  <div class="filter-popover" id="filterPopover"></div>
 
   <div class="sheet-overlay" id="backupOverlay"></div>
   <div class="sheet" id="backupSheet">
@@ -606,7 +740,8 @@
     <div class="more-fields" id="moreFields">
       <div class="field-row">
         <div class="field"><label>Phonetic</label><input id="fPhonetic" autocomplete="off"></div>
-        <div class="field"><label>Part of Speech</label><input id="fPos" autocomplete="off"></div>
+        <div class="field"><label>Part of Speech</label><input id="fPos" list="posOptions" autocomplete="off"></div>
+        <datalist id="posOptions"></datalist>
       </div>
       <div class="field"><label>Translation</label><textarea id="fExampleZh"></textarea></div>
       <div class="field"><label>Tag</label><input id="fTag" autocomplete="off"></div>
@@ -665,6 +800,12 @@ const App = {
     editingId: null,
     currentTab: 'list', // 'list' 词库 | 'review' 复习
     searchQuery: '',
+    // 场景筛选：tag/scene/domain 各自选中的值（数组）。组内"或"、组间"且"；
+    // 空数组表示该组没有筛选，不参与限制。跟搜索一样是临时状态，不存库，刷新页面就清空。
+    sceneFilter: { tag: [], scene: [], domain: [] },
+    filterRowExpanded: false, // 筛选行是否展开（点 header 上的三横线图标切换），默认收起，减少常驻占用的视觉空间
+    activeField: null, // 当前聚焦的筛选输入框对应字段（'scene'/'domain'/'tag'），没聚焦是 null
+    editQuery: '', // 聚焦状态下当前打的字，用来过滤建议列表
     reviewDueOnly: true,  // true=只看今日到期 false=全部单词
     reviewQueue: [],
     reviewIndex: 0,
@@ -727,7 +868,9 @@ const App = {
       upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
       cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
       chevronLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
-      search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+      search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+      check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+      close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
     }
   },
 
@@ -735,6 +878,7 @@ const App = {
     main(){
       App.render.syncNav();
       App.render.syncHeaderSearch();
+      App.render.syncFilterRow();
       const S = App.state;
       if(S.currentTab === 'review') App.render.review();
       else App.render.list();
@@ -754,9 +898,22 @@ const App = {
       App.dom.headerSearch.classList.toggle('hidden', App.state.currentTab !== 'list');
     },
 
+    // 场景筛选行：只在词库页 + 用户点开了筛选开关时才显示（两个条件都要满足）；
+    // 开关图标本身也要跟着"当前是否有筛选生效"变个颜色，收起来的时候也能看出还筛着东西。
+    // 同时把没在聚焦编辑中的字段刷新成"占位符/已选值摘要"这个展示态——凡是会改变
+    // 筛选结果的地方（切 tab、开关筛选行、清空筛选）都要调它。正在编辑的字段跳过，
+    // 不然会把用户正在打的字冲掉。
+    syncFilterRow(){
+      const show = App.state.currentTab === 'list' && App.state.filterRowExpanded;
+      App.dom.filterRow.classList.toggle('hidden', !show);
+      App.dom.filterToggleBtn.classList.toggle('active', App.filter.FIELDS.some(App.filter.isActive));
+      App.filter.FIELDS.forEach(field=>{
+        if(App.state.activeField !== field) App.filter._syncCollapsedDisplay(field);
+      });
+    },
+
     list(){
       const S = App.state;
-      App.dom.headerCount.textContent = S.words.length ? String(S.words.length) : '';
       const $main = App.dom.main;
 
       if(S.words.length === 0){
@@ -783,6 +940,7 @@ const App = {
 
       const q = (S.searchQuery || '').trim().toLowerCase();
       let list = S.words.slice().sort((a,b)=>b.createdAt - a.createdAt);
+      list = list.filter(App.filter.matches); // 场景筛选（tag/scene/domain），没选任何值时 matches 对谁都返回 true
       if(q){
         // 只匹配单词和释义这两个最常用的字段，例句/标签这些先不搜——
         // 真有需要以后再加，不然默认搜索范围太宽，结果反而不精准
@@ -864,7 +1022,6 @@ const App = {
     review(){
       const S = App.state;
       const $main = App.dom.main;
-      App.dom.headerCount.textContent = '';
       const esc = App.utils.escapeHtml;
 
       const modeToggleHtml = `<div class="review-mode-toggle">
@@ -1018,6 +1175,201 @@ const App = {
       w.status = (w.status === 2) ? 1 : 2;
       App.storage.save();
       App.render.list();
+    }
+  },
+
+  // 场景筛选：按 tag/scene/domain 三个字段筛词库列表。
+  //   - 组内（同一字段选了好几个值）是"或"——命中任一选中值就算
+  //   - 组间（tag/scene/domain 互相之间）是"且"——每个"有选中值"的组都必须命中，
+  //     没选任何值的组不参与限制（比如只选了 scene，tag/domain 就完全不筛）
+  // 现在只接在"浏览词库列表"上，不影响复习抽词——先把这个用顺了，以后要不要接进复习环节再说。
+  // 选中状态是临时的（不存库），跟 searchQuery 一个待遇，刷新页面就清空。
+  filter: {
+    FIELDS: ['scene', 'domain', 'tag'], // 展示顺序：Context 最常用排第一，Domain 第二，Tag 最少用排最后
+    LABELS: { tag: 'Tag', scene: 'Context', domain: 'Domain' },
+
+    // 从当前词库数据里收集某个字段出现过的去重值，不额外维护固定列表——
+    // 谁标过什么值，建议列表里就出现什么，标签值本身的规范与否是用户自己的事
+    getValues(field){
+      const set = new Set();
+      App.state.words.forEach(w=>{
+        const v = (w[field] || '').trim();
+        if(v) set.add(v);
+      });
+      return Array.from(set).sort((a,b)=>a.localeCompare(b, 'zh'));
+    },
+
+    isActive(field){ return App.state.sceneFilter[field].length > 0; },
+
+    matches(w){
+      return App.filter.FIELDS.every(field=>{
+        const selected = App.state.sceneFilter[field];
+        if(selected.length === 0) return true; // 这组没选，不限制
+        return selected.includes((w[field] || '').trim());
+      });
+    },
+
+    // 没聚焦时输入框用占位符显示的文字：没选就是字段名本身；选了 1 个就直接显示那个值；
+    // 选了多个就"第一个值 +N"，避免多个值堆在一个很窄的输入框里挤成一团
+    pillLabel(field){
+      const selected = App.state.sceneFilter[field];
+      if(selected.length === 0) return App.filter.LABELS[field];
+      if(selected.length === 1) return selected[0];
+      return `${selected[0]} +${selected.length - 1}`;
+    },
+
+    _cap(field){ return field.charAt(0).toUpperCase() + field.slice(1); },
+    // 三个字段对应的三组 DOM 节点，id 都是按 filterField/filterChips/filterInput + 首字母大写字段名 拼出来的
+    _els(field){
+      const c = App.filter._cap(field);
+      return {
+        field: App.dom['filterField' + c],
+        chips: App.dom['filterChips' + c],
+        input: App.dom['filterInput' + c]
+      };
+    },
+
+    reset(){
+      App.filter.FIELDS.forEach(f=>{ App.state.sceneFilter[f] = []; });
+      App.render._renderListResults();
+      App.filter.collapseActive();
+      App.filter.FIELDS.forEach(f=>App.filter._syncCollapsedDisplay(f));
+    },
+
+    collapseActive(){
+      if(App.state.activeField) App.filter._collapse(App.state.activeField);
+    },
+
+    // 输入框原生 focus 触发——点一下就是真正聚焦输入，键盘直接弹出来，不需要先点开
+    // 别的东西再手动 focus（这正是之前那版"要点两次才能打字"的问题根源）。
+    // 聚焦的字段展开变宽，另外两个收窄让位；已选的值这时候才渲染成 chip 显示出来。
+    _expand(field){
+      App.state.activeField = field;
+      App.state.editQuery = '';
+      App.filter.FIELDS.forEach(f=>{
+        const els = App.filter._els(f);
+        if(f === field){
+          els.field.classList.add('expanded');
+          els.field.classList.remove('shrunk');
+        } else {
+          els.field.classList.add('shrunk');
+          els.field.classList.remove('expanded');
+        }
+      });
+      App.filter._renderChips(field);
+      App.filter._renderSuggestions(field);
+      App.filter._position();
+      App.dom.filterPopover.classList.add('show');
+      App.dom.filterPopoverOverlay.classList.add('show');
+    },
+
+    // 输入框原生 blur 触发（点其他地方、点建议列表都算——建议卡片上挡了 mousedown
+    // 默认行为，所以点建议项不会先把输入框 blur 掉）。收起展开态，chip 收起来，
+    // 恢复成"占位符/已选值摘要"的平时展示。
+    _collapse(field){
+      App.filter.FIELDS.forEach(f=>{
+        App.filter._els(f).field.classList.remove('expanded', 'shrunk');
+      });
+      App.state.activeField = null;
+      App.state.editQuery = '';
+      App.dom.filterPopover.classList.remove('show');
+      App.dom.filterPopoverOverlay.classList.remove('show');
+      App.filter._syncCollapsedDisplay(field);
+    },
+
+    onInput(field, text){
+      App.state.editQuery = text;
+      App.filter._renderSuggestions(field);
+    },
+
+    addChip(field, value){
+      const arr = App.state.sceneFilter[field];
+      if(!arr.includes(value)) arr.push(value);
+      App.state.editQuery = '';
+      App.filter._els(field).input.value = '';
+      App.filter._renderChips(field);
+      App.filter._renderSuggestions(field);
+      App.filter._position(); // chip 变多可能让输入框换行变高，卡片位置要跟着重算
+      App.render._renderListResults();
+    },
+
+    removeChip(field, value){
+      const arr = App.state.sceneFilter[field];
+      const idx = arr.indexOf(value);
+      if(idx !== -1) arr.splice(idx, 1);
+      App.filter._renderChips(field);
+      App.filter._renderSuggestions(field);
+      App.filter._position();
+      App.render._renderListResults();
+    },
+
+    // 建议卡片贴着当前展开的那个字段出现在下方，宽度跟那个字段展开后的宽度一样
+    // （不再是整行那么宽），位置也直接锚定在那个字段身上，不管展开的是哪个字段，
+    // 卡片相对它的位置关系都一样；只有贴着最右边的 Tag 展开时才可能超出屏幕，
+    // 这种情况改成卡片右边缘对齐字段右边缘、往左边展开
+    _position(){
+      const appRect = App.dom.app.getBoundingClientRect();
+      const fieldRect = App.filter._els(App.state.activeField).field.getBoundingClientRect();
+      const pop = App.dom.filterPopover;
+      const width = fieldRect.width;
+      let left = fieldRect.left - appRect.left;
+      const maxLeft = appRect.width - width - 8;
+      if(left > maxLeft) left = Math.max(8, maxLeft);
+      pop.style.width = width + 'px';
+      pop.style.left = left + 'px';
+      pop.style.top = (fieldRect.bottom - appRect.top + 6) + 'px';
+    },
+
+    _renderChips(field){
+      const esc = App.utils.escapeHtml;
+      const els = App.filter._els(field);
+      const selected = App.state.sceneFilter[field];
+      els.chips.innerHTML = selected.map(v=>
+        `<span class="filter-chip" data-value="${esc(v)}">
+          <span class="chip-label">${esc(v)}</span>
+          <span class="chip-remove">${App.utils.icons.close}</span>
+        </span>`
+      ).join('');
+      els.chips.querySelectorAll('.filter-chip').forEach(el=>{
+        el.querySelector('.chip-remove').onclick = ()=>App.filter.removeChip(field, el.dataset.value);
+      });
+      // 已经有 chip 顶着了，输入框占位符就不用再重复显示字段名
+      els.input.placeholder = selected.length ? '' : App.filter.LABELS[field];
+    },
+
+    // 没聚焦时的展示态：清空输入内容，占位符换成"字段名或已选值摘要"，chip 收起来不显示
+    _syncCollapsedDisplay(field){
+      const els = App.filter._els(field);
+      els.input.value = '';
+      els.input.placeholder = App.filter.pillLabel(field);
+      els.chips.innerHTML = '';
+    },
+
+    // 建议列表：已选中的值不再出现在候选里（已经是 chip 了），
+    // 打的字按子串、不分大小写去匹配现有值；没打字就把还没选的值全列出来，
+    // 这样一聚焦马上能看到有哪些值可选，不用先打字才有反应
+    _renderSuggestions(field){
+      const esc = App.utils.escapeHtml;
+      const selected = App.state.sceneFilter[field];
+      const all = App.filter.getValues(field);
+      const q = App.state.editQuery.trim().toLowerCase();
+      const candidates = all.filter(v=>!selected.includes(v) && (!q || v.toLowerCase().includes(q)));
+      const pop = App.dom.filterPopover;
+
+      if(all.length === 0){
+        pop.innerHTML = `<div class="fo-empty">还没有词标过 ${esc(App.filter.LABELS[field])}</div>`;
+        return;
+      }
+      if(candidates.length === 0){
+        pop.innerHTML = `<div class="fo-empty">没有匹配的值</div>`;
+        return;
+      }
+      pop.innerHTML = candidates.map(v=>
+        `<div class="filter-option" data-value="${esc(v)}">${esc(v)}</div>`
+      ).join('');
+      pop.querySelectorAll('.filter-option').forEach(el=>{
+        el.onclick = ()=>App.filter.addChip(field, el.dataset.value);
+      });
     }
   },
 
@@ -1442,6 +1794,20 @@ const App = {
   // 添加/编辑单词共用的底部弹出表单。新增和编辑是同一套 HTML、同一个 save()，
   // 靠 state.editingId 有没有值来区分（有值=编辑已有单词，null=新建）。
   sheet: {
+    // Part of Speech 历史值：词性来来回回就那几种，不用每次手打——从已有单词里
+    // 收集出现过的值塞进 <datalist>，靠浏览器原生的输入建议来选，不用额外做弹层。
+    // 打开表单（新增/编辑）时刷新一次就够了，没必要实时监听数据变化。
+    _refreshPosOptions(){
+      const esc = App.utils.escapeHtml;
+      const set = new Set();
+      App.state.words.forEach(w=>{
+        const v = (w.pos || '').trim();
+        if(v) set.add(v);
+      });
+      const values = Array.from(set).sort((a,b)=>a.localeCompare(b, 'zh'));
+      App.dom.posOptions.innerHTML = values.map(v=>`<option value="${esc(v)}"></option>`).join('');
+    },
+
     openAdd(){
       const S = App.state;
       S.editingId = null;
@@ -1453,6 +1819,7 @@ const App = {
       document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
       App.dom.moreFields.classList.remove('open');
       App.dom.moreToggle.classList.remove('open');
+      App.sheet._refreshPosOptions();
       App.sheet.show();
       setTimeout(()=>document.getElementById('fWord').focus(), 300);
     },
@@ -1478,10 +1845,12 @@ const App = {
       document.getElementById('fStatus').value = String(w.status || 1);
       document.getElementById('fDate').value = w.date || new Date().toISOString().slice(0,10);
 
-      const hasMore = !!(w.phonetic || w.pos || w.exampleZh || w.tag || w.scene || w.domain || w.related);
-      App.dom.moreFields.classList.toggle('open', hasMore);
-      App.dom.moreToggle.classList.toggle('open', hasMore);
+      // More 区域统一保持收起——不管字段里有没有数据都一样，跟"新增"那边的行为对齐，
+      // 用户自己点开看，不用 AI 猜"有数据就该默认展开"
+      App.dom.moreFields.classList.remove('open');
+      App.dom.moreToggle.classList.remove('open');
 
+      App.sheet._refreshPosOptions();
       App.sheet.show();
     },
 
@@ -1549,16 +1918,31 @@ const App = {
 
   init(){
     this.dom = {
+      app: document.getElementById('app'),
       main: document.getElementById('main'),
-      headerCount: document.getElementById('headerCount'),
       headerSearch: document.getElementById('headerSearch'),
       searchInput: document.getElementById('listSearchInput'),
+      filterToggleBtn: document.getElementById('filterToggleBtn'),
+      filterRow: document.getElementById('filterRow'),
+      filterFieldScene: document.getElementById('filterFieldScene'),
+      filterChipsScene: document.getElementById('filterChipsScene'),
+      filterInputScene: document.getElementById('filterInputScene'),
+      filterFieldDomain: document.getElementById('filterFieldDomain'),
+      filterChipsDomain: document.getElementById('filterChipsDomain'),
+      filterInputDomain: document.getElementById('filterInputDomain'),
+      filterFieldTag: document.getElementById('filterFieldTag'),
+      filterChipsTag: document.getElementById('filterChipsTag'),
+      filterInputTag: document.getElementById('filterInputTag'),
+      filterResetBtn: document.getElementById('filterResetBtn'),
+      filterPopover: document.getElementById('filterPopover'),
+      filterPopoverOverlay: document.getElementById('filterPopoverOverlay'),
       toast: document.getElementById('toast'),
       sheet: document.getElementById('sheet'),
       sheetOverlay: document.getElementById('sheetOverlay'),
       sheetTitle: document.getElementById('sheetTitle'),
       moreToggle: document.getElementById('moreToggle'),
       moreFields: document.getElementById('moreFields'),
+      posOptions: document.getElementById('posOptions'),
       deleteBtn: document.getElementById('deleteBtn'),
       saveBtn: document.getElementById('saveBtn'),
       fabAdd: document.getElementById('fabAdd'),
@@ -1588,11 +1972,40 @@ const App = {
     this.dom.backupOverlay.onclick = ()=>this.backup.close();
     this.dom.importFileInput.onchange = (e)=>this.backup.handleFile(e);
 
+    // 三个筛选输入框本身就是真正的 input：原生 focus/blur 驱动展开/收起，
+    // 点一下直接聚焦弹键盘，不用先点别的东西再手动 focus。
+    // 建议卡片上挡了 mousedown 默认行为，所以点建议项不会在 click 触发前先把输入框 blur 掉。
+    // 输入框为空时按退格键相当于删掉最后一个 chip（tag 输入的常见手势）。
+    this.filter.FIELDS.forEach(field=>{
+      const els = this.filter._els(field);
+      els.input.addEventListener('focus', ()=>this.filter._expand(field));
+      els.input.addEventListener('blur', ()=>this.filter._collapse(field));
+      els.input.addEventListener('input', (e)=>this.filter.onInput(field, e.target.value));
+      els.input.addEventListener('keydown', (e)=>{
+        if(e.key === 'Backspace' && !e.target.value){
+          const arr = this.state.sceneFilter[field];
+          if(arr.length) this.filter.removeChip(field, arr[arr.length - 1]);
+        }
+      });
+    });
+    this.dom.filterResetBtn.onclick = ()=>this.filter.reset();
+    this.dom.filterPopoverOverlay.onclick = ()=>this.filter.collapseActive();
+    this.dom.filterPopover.addEventListener('mousedown', e=>e.preventDefault());
+    // header 上的三横线图标：开关筛选行的显示/隐藏；收起的时候顺带把还开着的输入框收一下，
+    // 别让筛选行都要消失了还留一个展开态的建议卡片飘在那
+    this.dom.filterToggleBtn.onclick = ()=>{
+      this.state.filterRowExpanded = !this.state.filterRowExpanded;
+      if(!this.state.filterRowExpanded) this.filter.collapseActive();
+      this.render.syncFilterRow();
+    };
+
     document.querySelectorAll('.nav-btn').forEach(btn=>{
       btn.onclick = ()=>{
         this.state.currentTab = btn.dataset.tab;
         this.render.syncNav();
         this.render.syncHeaderSearch();
+        this.filter.collapseActive(); // 切走词库页时，展开态要是还开着就一起收起来，别浮在别的页面上方
+        this.render.syncFilterRow();
         if(btn.dataset.tab === 'review'){
           this.review.start(this.state.reviewDueOnly);
         } else {
