@@ -203,6 +203,7 @@
   }
   .filter-popover-overlay.show{ display:block; }
   #app > .filter-popover-overlay{ position:absolute; }
+  .sheet > .filter-popover-overlay{ position:absolute; } /* Part of Speech 建议卡片挂在 .sheet 下时，按 .sheet 这个容器定位（.sheet 本身滚动，卡片跟着一起滚，不会跟丢） */
   .filter-popover{
     position:fixed;
     background:var(--surface);
@@ -217,6 +218,7 @@
   }
   .filter-popover.show{ display:block; }
   #app > .filter-popover{ position:absolute; }
+  .sheet > .filter-popover{ position:absolute; }
   .filter-option{
     padding:10px 10px;
     border-radius:var(--radius-sm);
@@ -403,9 +405,10 @@
     z-index:15;
   }
   .fab:active{ background:var(--accent-deep); }
-  #app > .fab{
-    position:absolute;
-  }
+  /* 之前这里有条 #app > .fab{ position:absolute } 的覆盖规则，本意是想让按钮按 #app
+     这个 480px 宽的容器来定位，结果 #app 没设固定高度、跟着单词卡片一起变高，
+     导致按钮"贴的"是内容的最底部而不是屏幕的最底部——卡片越加越多，按钮和导航栏
+     就跟着一路往下掉。去掉这条覆盖，让 position:fixed 生效，才能真正贴在屏幕底部。 */
 
   /* ── 底部导航栏 ── */
   .nav-bar{
@@ -419,7 +422,6 @@
     padding-bottom:env(safe-area-inset-bottom,0);
     z-index:14;
   }
-  #app > .nav-bar{ position:absolute; }
   .nav-btn{
     flex:1;
     background:none;
@@ -740,8 +742,7 @@
     <div class="more-fields" id="moreFields">
       <div class="field-row">
         <div class="field"><label>Phonetic</label><input id="fPhonetic" autocomplete="off"></div>
-        <div class="field"><label>Part of Speech</label><input id="fPos" list="posOptions" autocomplete="off"></div>
-        <datalist id="posOptions"></datalist>
+        <div class="field"><label>Part of Speech</label><input id="fPos" autocomplete="off"></div>
       </div>
       <div class="field"><label>Translation</label><textarea id="fExampleZh"></textarea></div>
       <div class="field"><label>Tag</label><input id="fTag" autocomplete="off"></div>
@@ -764,6 +765,9 @@
         <div class="field"><label>Date Added</label><input id="fDate" type="date"></div>
       </div>
     </div>
+
+    <div class="filter-popover-overlay" id="posPopoverOverlay"></div>
+    <div class="filter-popover" id="posPopover"></div>
 
     <div class="sheet-actions">
       <button class="btn btn-danger" id="deleteBtn" style="display:none;">Delete</button>
@@ -1794,18 +1798,65 @@ const App = {
   // 添加/编辑单词共用的底部弹出表单。新增和编辑是同一套 HTML、同一个 save()，
   // 靠 state.editingId 有没有值来区分（有值=编辑已有单词，null=新建）。
   sheet: {
-    // Part of Speech 历史值：词性来来回回就那几种，不用每次手打——从已有单词里
-    // 收集出现过的值塞进 <datalist>，靠浏览器原生的输入建议来选，不用额外做弹层。
-    // 打开表单（新增/编辑）时刷新一次就够了，没必要实时监听数据变化。
-    _refreshPosOptions(){
-      const esc = App.utils.escapeHtml;
+    // Part of Speech 历史值建议：词性来来回回就那几种，不用每次手打。
+    // 跟筛选行的建议卡片同一套视觉（复用 .filter-popover/.filter-option 样式），
+    // 但这里是单选——点一个建议直接把值填进输入框，不是变成 chip。
+    // 挂在 .sheet 下面而不是 #app 下面，因为这个输入框本身在会滚动的 sheet 里，
+    // 卡片要跟着一起滚，不能用 filter 那套挂在 #app 下的定位方式。
+    _posCandidates(query){
       const set = new Set();
       App.state.words.forEach(w=>{
         const v = (w.pos || '').trim();
         if(v) set.add(v);
       });
-      const values = Array.from(set).sort((a,b)=>a.localeCompare(b, 'zh'));
-      App.dom.posOptions.innerHTML = values.map(v=>`<option value="${esc(v)}"></option>`).join('');
+      const all = Array.from(set).sort((a,b)=>a.localeCompare(b, 'zh'));
+      const q = query.trim().toLowerCase();
+      return all.filter(v=>!q || v.toLowerCase().includes(q));
+    },
+
+    _renderPosPopover(){
+      const esc = App.utils.escapeHtml;
+      const input = document.getElementById('fPos');
+      const candidates = App.sheet._posCandidates(input.value);
+      const pop = App.dom.posPopover;
+      if(candidates.length === 0){
+        pop.innerHTML = `<div class="fo-empty">没有匹配的词性</div>`;
+        return;
+      }
+      pop.innerHTML = candidates.map(v=>
+        `<div class="filter-option" data-value="${esc(v)}">${esc(v)}</div>`
+      ).join('');
+      pop.querySelectorAll('.filter-option').forEach(el=>{
+        el.onclick = ()=>{
+          input.value = el.dataset.value;
+          App.sheet._closePosPopover();
+        };
+      });
+    },
+
+    _positionPosPopover(){
+      const sheetRect = App.dom.sheet.getBoundingClientRect();
+      const inputRect = document.getElementById('fPos').getBoundingClientRect();
+      const pop = App.dom.posPopover;
+      const width = inputRect.width;
+      let left = inputRect.left - sheetRect.left;
+      const maxLeft = sheetRect.width - width - 8;
+      if(left > maxLeft) left = Math.max(8, maxLeft);
+      pop.style.width = width + 'px';
+      pop.style.left = left + 'px';
+      pop.style.top = (inputRect.bottom - sheetRect.top + 6) + 'px';
+    },
+
+    _openPosPopover(){
+      App.sheet._renderPosPopover();
+      App.sheet._positionPosPopover();
+      App.dom.posPopover.classList.add('show');
+      App.dom.posPopoverOverlay.classList.add('show');
+    },
+
+    _closePosPopover(){
+      App.dom.posPopover.classList.remove('show');
+      App.dom.posPopoverOverlay.classList.remove('show');
     },
 
     openAdd(){
@@ -1819,7 +1870,6 @@ const App = {
       document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
       App.dom.moreFields.classList.remove('open');
       App.dom.moreToggle.classList.remove('open');
-      App.sheet._refreshPosOptions();
       App.sheet.show();
       setTimeout(()=>document.getElementById('fWord').focus(), 300);
     },
@@ -1850,7 +1900,6 @@ const App = {
       App.dom.moreFields.classList.remove('open');
       App.dom.moreToggle.classList.remove('open');
 
-      App.sheet._refreshPosOptions();
       App.sheet.show();
     },
 
@@ -1942,7 +1991,8 @@ const App = {
       sheetTitle: document.getElementById('sheetTitle'),
       moreToggle: document.getElementById('moreToggle'),
       moreFields: document.getElementById('moreFields'),
-      posOptions: document.getElementById('posOptions'),
+      posPopover: document.getElementById('posPopover'),
+      posPopoverOverlay: document.getElementById('posPopoverOverlay'),
       deleteBtn: document.getElementById('deleteBtn'),
       saveBtn: document.getElementById('saveBtn'),
       fabAdd: document.getElementById('fabAdd'),
@@ -1998,6 +2048,15 @@ const App = {
       if(!this.state.filterRowExpanded) this.filter.collapseActive();
       this.render.syncFilterRow();
     };
+
+    // Part of Speech 历史值建议：原生 focus/blur 驱动开关，跟筛选行的输入框是同一套思路；
+    // 卡片上挡了 mousedown，点建议项不会在 click 触发前先把输入框 blur 掉
+    const fPosInput = document.getElementById('fPos');
+    fPosInput.addEventListener('focus', ()=>this.sheet._openPosPopover());
+    fPosInput.addEventListener('input', ()=>this.sheet._renderPosPopover());
+    fPosInput.addEventListener('blur', ()=>this.sheet._closePosPopover());
+    this.dom.posPopoverOverlay.onclick = ()=>this.sheet._closePosPopover();
+    this.dom.posPopover.addEventListener('mousedown', e=>e.preventDefault());
 
     document.querySelectorAll('.nav-btn').forEach(btn=>{
       btn.onclick = ()=>{
