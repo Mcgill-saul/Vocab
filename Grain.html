@@ -47,6 +47,15 @@
     --fs-display: 30px; /* 复习卡片正面大字、FAB 加号 */
   }
   *{box-sizing:border-box;}
+  html{
+    /* 词库页卡片多、常出现竖直滚动条；复习页内容短、往往不用滚动条——桌面浏览器的
+       滚动条会占实际布局宽度，一出现一消失，居中的 #app 就跟着左右挪几像素，
+       header 里贴边的 logo/设置按钮挪动最明显。让滚动条永远占位（不管用不用得上），
+       宽度就不会再因为切 tab 跳来跳去。手机上滚动条本来就是悬浮的、不占宽度，这条
+       规则在手机上没有任何视觉影响。 */
+    overflow-y:scroll;
+    scrollbar-gutter:stable;
+  }
   html,body{
     margin:0;padding:0;height:100%;
     background:var(--bg);
@@ -246,8 +255,10 @@
   }
   .icon-btn svg{ width:15px; height:15px; }
   .icon-btn:active{ background:var(--surface-2); }
-  /* 筛选开关图标：收起状态下也要能看出"现在是不是筛着东西"，有筛选生效就换成强调色 */
+  /* 筛选开关图标：收起状态下也要能看出"现在是不是筛着东西"，有筛选生效就换成强调色；
+     跟搜索框一样只在词库页显示，切到复习页就藏起来 */
   #filterToggleBtn.active{ color:var(--accent); border-color:var(--accent); }
+  #filterToggleBtn.hidden{ display:none; }
 
   .backup-row{
     display:flex;
@@ -386,10 +397,27 @@
   }
 
   /* ── FAB ── */
-  .fab{
+  /* .fab 之前用 right:20px 定位，量的是"整个浏览器窗口"的右边缘，手机上因为窗口宽度
+     就等于内容宽度所以看不出问题；桌面浏览器开宽窗口时 #app 会缩成居中的 480px 窄栏，
+     这个 20px 就变成贴着真实窗口右边缘，飘到窄栏外面那片空白里去了。
+     改成跟 .nav-bar 同一套技巧：外面套一层跟 .nav-bar 一样居中的 480px 宽整行
+     (.fab-wrap)，按钮在这层里用 flex 对齐到右边、留 20px——这样"20px"量的是
+     居中窄栏的右边缘，不是真实视口的右边缘，桌面/手机都能跟内容对齐。
+     .fab-wrap 本身设成 pointer-events:none 别挡住底下的单词列表，
+     真正能点的按钮上再手动开回 pointer-events:auto。 */
+  .fab-wrap{
     position:fixed;
-    right:20px;
-    bottom:calc(78px + env(safe-area-inset-bottom,0)); /* 抬高到底部导航栏上方 */
+    left:0; right:0;
+    bottom:calc(78px + env(safe-area-inset-bottom,0));
+    max-width:480px;
+    margin:0 auto;
+    display:flex;
+    justify-content:flex-end;
+    padding-right:20px;
+    pointer-events:none;
+    z-index:15;
+  }
+  .fab{
     width:56px;height:56px;
     border-radius:50%;
     background:var(--accent);
@@ -402,13 +430,9 @@
     align-items:center;
     justify-content:center;
     cursor:pointer;
-    z-index:15;
+    pointer-events:auto;
   }
   .fab:active{ background:var(--accent-deep); }
-  /* 之前这里有条 #app > .fab{ position:absolute } 的覆盖规则，本意是想让按钮按 #app
-     这个 480px 宽的容器来定位，结果 #app 没设固定高度、跟着单词卡片一起变高，
-     导致按钮"贴的"是内容的最底部而不是屏幕的最底部——卡片越加越多，按钮和导航栏
-     就跟着一路往下掉。去掉这条覆盖，让 position:fixed 生效，才能真正贴在屏幕底部。 */
 
   /* ── 底部导航栏 ── */
   .nav-bar{
@@ -714,7 +738,7 @@
     <button class="nav-btn" data-tab="review"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><span>Review</span></button>
   </nav>
 
-  <button class="fab" id="fabAdd">+</button>
+  <div class="fab-wrap"><button class="fab" id="fabAdd">+</button></div>
 
   <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;">
 
@@ -902,14 +926,16 @@ const App = {
       App.dom.headerSearch.classList.toggle('hidden', App.state.currentTab !== 'list');
     },
 
-    // 场景筛选行：只在词库页 + 用户点开了筛选开关时才显示（两个条件都要满足）；
+    // 场景筛选：开关图标（三横线）跟搜索框一样，只在词库页显示，切到复习页就藏起来；
+    // 筛选行本身除了看页面，还要看用户有没有点开开关，两个条件都满足才显示。
     // 开关图标本身也要跟着"当前是否有筛选生效"变个颜色，收起来的时候也能看出还筛着东西。
     // 同时把没在聚焦编辑中的字段刷新成"占位符/已选值摘要"这个展示态——凡是会改变
     // 筛选结果的地方（切 tab、开关筛选行、清空筛选）都要调它。正在编辑的字段跳过，
     // 不然会把用户正在打的字冲掉。
     syncFilterRow(){
-      const show = App.state.currentTab === 'list' && App.state.filterRowExpanded;
-      App.dom.filterRow.classList.toggle('hidden', !show);
+      const onListTab = App.state.currentTab === 'list';
+      App.dom.filterToggleBtn.classList.toggle('hidden', !onListTab);
+      App.dom.filterRow.classList.toggle('hidden', !(onListTab && App.state.filterRowExpanded));
       App.dom.filterToggleBtn.classList.toggle('active', App.filter.FIELDS.some(App.filter.isActive));
       App.filter.FIELDS.forEach(field=>{
         if(App.state.activeField !== field) App.filter._syncCollapsedDisplay(field);
@@ -1203,6 +1229,7 @@ const App = {
       return Array.from(set).sort((a,b)=>a.localeCompare(b, 'zh'));
     },
 
+    // 这个字段当前是否有筛选值生效（数组非空）
     isActive(field){ return App.state.sceneFilter[field].length > 0; },
 
     matches(w){
@@ -1233,6 +1260,7 @@ const App = {
       };
     },
 
+    // 清空按钮：三个字段的筛选值全部清空，收起展开态，列表刷新回未筛选的全量
     reset(){
       App.filter.FIELDS.forEach(f=>{ App.state.sceneFilter[f] = []; });
       App.render._renderListResults();
@@ -1240,6 +1268,7 @@ const App = {
       App.filter.FIELDS.forEach(f=>App.filter._syncCollapsedDisplay(f));
     },
 
+    // 有字段正展开着就收起来；给"切 tab""关筛选行"这些场景统一调用，不用自己判断有没有展开
     collapseActive(){
       if(App.state.activeField) App.filter._collapse(App.state.activeField);
     },
@@ -1281,11 +1310,13 @@ const App = {
       App.filter._syncCollapsedDisplay(field);
     },
 
+    // 输入框打字事件：记下当前打的字，建议列表跟着实时过滤
     onInput(field, text){
       App.state.editQuery = text;
       App.filter._renderSuggestions(field);
     },
 
+    // 点建议项：把值加进这个字段的选中列表（去重），清空当前打的字，重新渲染 chip/建议/列表
     addChip(field, value){
       const arr = App.state.sceneFilter[field];
       if(!arr.includes(value)) arr.push(value);
@@ -1297,6 +1328,7 @@ const App = {
       App.render._renderListResults();
     },
 
+    // 点 chip 上的 × 或退格键触发：把值从这个字段的选中列表里去掉，重新渲染 chip/建议/列表
     removeChip(field, value){
       const arr = App.state.sceneFilter[field];
       const idx = arr.indexOf(value);
