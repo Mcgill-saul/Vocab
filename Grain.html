@@ -74,6 +74,10 @@
     position:relative;
   }
   header{
+    position:sticky;
+    top:0;
+    z-index:14; /* 跟底部导航栏同一档，比列表内容高，比 sheet/建议卡片低 */
+    background:var(--bg); /* 贴顶之后下面卡片会从底下滚上来，得有个不透明背景挡住，不然会透出来 */
     padding-top:env(safe-area-inset-top,0); /* 只处理刘海屏偏移，不参与撑高 */
     padding-left:20px;
     padding-right:20px;
@@ -143,6 +147,10 @@
     align-items:center;
     gap:6px;
     padding:8px 20px 10px;
+    position:sticky;
+    top:60px; /* 紧贴在 header 下面——header 自己贴顶高度是 60px，这里从 60px 开始贴 */
+    z-index:14;
+    background:var(--bg); /* 同样需要不透明背景，不然列表卡片滚上来的时候会透出来 */
   }
   .filter-row.hidden{ display:none; }
   .filter-row .icon-btn{ flex-shrink:0; }
